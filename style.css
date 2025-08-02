@@ -1,0 +1,594 @@
+body {
+  font-family: Arial, sans-serif;
+  text-align: center;
+  padding: 20px;
+}
+
+.options label {
+  margin: 0 10px;
+  cursor: pointer;
+}
+
+.choices button {
+  position: relative;
+  min-width: 110px;
+  margin-bottom: 10px;
+  font-size: 24px;
+  margin: 10px;
+  padding: 10px 20px;
+}
+
+.scoreboard {
+  margin: 20px 0;
+  font-size: 18px;
+}
+
+.game-flex {
+  display: flex;
+  align-items: flex-start;
+  gap: 40px;
+  margin-top: 20px;
+}
+
+.player-section, .ai-section {
+  flex: 1;
+  text-align: center;
+}
+
+.divider {
+  width: 2px;
+  background: #ccc;
+  height: 100px;
+  margin: 0 20px;
+}
+
+#aiChoiceDisplay {
+  margin-top: 20px;
+  font-size: 1.5em;
+  min-height: 40px;
+}
+
+.session-board {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 40px;
+  font-size: 1.1em;
+  margin-bottom: 10px;
+  margin-top: 20px;
+}
+
+.btn-stats {
+  display: inline-block;
+  font-size: 0.65em;
+  background: #ff4fa3;
+  color: #fff;
+  border-radius: 16px;
+  padding: 2px 10px;
+  margin-left: 8px;
+  margin-top: 0;
+  vertical-align: middle;
+  font-weight: bold;
+}
+
+.score-side {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 70px;
+}
+
+.score-center {
+  min-width: 70px;
+  text-align: center;
+  font-weight: bold;
+}
+
+.history-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+  font-size: 1em;
+}
+.history-table th, .history-table td {
+  border: 1px solid #ddd;
+  padding: 6px 10px;
+  text-align: center;
+}
+.history-table th {
+  background: #f6f6f6;
+}
+.history-table tr:nth-child(even) {
+  background: #fafafa;
+}
+.history-table tr.history-win {
+  background: #d6ffd6;
+}
+.history-table tr.history-loss {
+  background: #ffe0ef;
+}
+
+.animated-title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  font-size: 2.2em;
+  font-family: 'Segoe UI', 'Arial', sans-serif;
+  margin-bottom: 18px;
+  position: relative;
+  user-select: none;
+}
+
+.rps-word {
+  font-size: 1.5em;
+  font-weight: bold;
+  margin: 0 6px;
+  position: relative;
+  z-index: 1;
+  display: inline-block;
+  transition: transform 0.3s, color 0.3s;
+}
+
+.rps-letter {
+  font-size: 1.2em;
+  transition: transform 0.3s;
+}
+
+.rps-sub {
+  display: block;
+  text-align: center;
+  font-size: 0.7em;
+  color: #888;
+  margin-top: 8px;
+}
+
+/* --- Cartoon Effects --- */
+
+/* Rock squashes "Scissors" */
+.squash-scissors {
+  animation: squashScissors 1s forwards;
+}
+@keyframes squashScissors {
+  0% { transform: scaleY(1) scaleX(1); }
+  30% { transform: scaleY(0.5) scaleX(1.2); color: #c00;}
+  60% { transform: scaleY(0.4) scaleX(1.3); color: #c00;}
+  100% { transform: scaleY(1) scaleX(1); color: inherit;}
+}
+.rock-attack {
+  animation: rockAttack 1s;
+}
+@keyframes rockAttack {
+  0% { transform: translateX(0);}
+  30% { transform: translateX(30px) scale(1.2);}
+  60% { transform: translateX(30px) scale(1.2);}
+  100% { transform: translateX(0);}
+}
+
+/* Paper wipes out Rock */
+.paper-wipe {
+  animation: paperWipe 1.2s forwards;
+  z-index: 2;
+  position: relative;
+}
+@keyframes paperWipe {
+  0% { left: 0; opacity: 1;}
+  30% { left: -40px; opacity: 1;}
+  60% { left: -40px; opacity: 1;}
+  80% { left: 0; opacity: 1;}
+  100% { left: 0; opacity: 1;}
+}
+.rock-hidden {
+  opacity: 0.1;
+  transition: opacity 0.5s;
+}
+
+/* Scissors cut Paper in half */
+.paper-cut {
+  position: relative;
+}
+.paper-cut-top, .paper-cut-bottom {
+  display: block;
+  position: absolute;
+  left: 0;
+  width: 100%;
+  overflow: hidden;
+  color: #222;
+}
+.paper-cut-top {
+  top: 0;
+  height: 50%;
+  border-bottom: 2px dashed #ff4fa3;
+  z-index: 2;
+  background: #fff;
+}
+.paper-cut-bottom {
+  top: 50%;
+  height: 50%;
+  border-top: 2px dashed #ff4fa3;
+  z-index: 2;
+  background: #fff;
+}
+.cut-animate-top {
+  animation: cutTop 1s forwards;
+}
+.cut-animate-bottom {
+  animation: cutBottom 1s forwards;
+}
+@keyframes cutTop {
+  0% { transform: translateY(0);}
+  60% { transform: translateY(-18px);}
+  100% { transform: translateY(0);}
+}
+@keyframes cutBottom {
+  0% { transform: translateY(0);}
+  60% { transform: translateY(18px);}
+  100% { transform: translateY(0);}
+}
+.scissors-attack {
+  animation: scissorsAttack 1s;
+}
+@keyframes scissorsAttack {
+  0% { transform: translateX(0);}
+  30% { transform: translateX(-30px) scale(1.2);}
+  60% { transform: translateX(-30px) scale(1.2);}
+  100% { transform: translateX(0);}
+}
+
+.rps-anim-container {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 10px;
+  position: relative;
+  min-height: 70px;
+}
+
+.rps-icon {
+  font-size: 2.2em;
+  position: relative;
+  z-index: 2;
+  transition: transform 0.3s;
+  cursor: pointer;
+}
+
+/* --- Cartoon Animations --- */
+
+/* Rock bounce and smush */
+.rock-bounce {
+  animation: rockBounce 1.2s cubic-bezier(.68,-0.55,.27,1.55);
+}
+@keyframes rockBounce {
+  0% { transform: translateX(0) scale(1);}
+  20% { transform: translateY(-20px) scale(1.1);}
+  40% { transform: translateX(60px) scale(1);}
+  60% { transform: translateY(-10px) scale(1.2);}
+  80% { transform: translateX(120px) scale(1);}
+  100% { transform: translateX(120px) scale(1);}
+}
+.scissors-smush {
+  animation: scissorsSmush 1.2s;
+}
+@keyframes scissorsSmush {
+  0% { transform: scaleY(1);}
+  40% { transform: scaleY(0.7) scaleX(1.2) color: #c00;}
+  80% { transform: scaleY(0.5) scaleX(1.3) color: #c00;}
+  100% { transform: scaleY(1) scaleX(1) color: inherit;}
+}
+
+/* Paper crawl and cover */
+.paper-crawl {
+  animation: paperCrawl 1.5s;
+}
+@keyframes paperCrawl {
+  0% { transform: translateX(0) rotate(0);}
+  20% { transform: translateY(10px) rotate(-10deg);}
+  40% { transform: translateX(-60px) rotate(8deg);}
+  60% { transform: translateY(20px) rotate(-8deg);}
+  80% { transform: translateX(-120px) rotate(0);}
+  100% { transform: translateX(-120px) rotate(0);}
+}
+.rock-covered {
+  animation: rockCovered 1.5s;
+  background: #fff0fa;
+  color: #ff4fa3;
+}
+@keyframes rockCovered {
+  0% { filter: none;}
+  40% { filter: brightness(0.7);}
+  80% { filter: brightness(0.4);}
+  100% { filter: none;}
+}
+
+/* Scissors cut and paper peel */
+.scissors-cut {
+  animation: scissorsCut 1.2s;
+}
+@keyframes scissorsCut {
+  0% { transform: translateX(0);}
+  40% { transform: translateX(-60px) rotate(-15deg);}
+  80% { transform: translateX(-120px) rotate(10deg);}
+  100% { transform: translateX(-120px) rotate(0);}
+}
+.paper-peel {
+  animation: paperPeel 1.2s;
+}
+@keyframes paperPeel {
+  0% { clip-path: inset(0 0 0 0);}
+  60% { clip-path: inset(0 0 40% 0);}
+  100% { clip-path: inset(0 0 0 0);}
+}
+
+.rps-orbit-title {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+
+.rps-orbit-title-flex {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 32px;
+  margin-bottom: 24px;
+}
+
+.orbit-logo {
+  height: 300px;   /* was 80px */
+  width: auto;
+  display: block;
+  background: none !important;
+}
+
+.rps-orbit-circle {
+  position: relative;
+  width: 170px;   /* was 160px */
+  height: 170px;  /* was 160px */
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff 60%, #ffe0f4 100%);
+  box-shadow: 0 0 16px #ff4fa355;
+  overflow: visible;
+}
+
+.rps-orbit-center {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  z-index: 2;
+}
+
+.rps-orbit-100 {
+  font-size: 2.2em;
+  font-weight: bold;
+  color: #ff4fa3;
+  line-height: 1;
+}
+
+.rps-orbit-icon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  font-size: 2em;
+  pointer-events: none;
+  will-change: transform;
+  /* Center the icon as the base */
+  transform: translate(-50%, -50%);
+}
+
+.rps-orbit-icon.rock {
+  animation: orbit-planet 6s linear infinite;
+  --orbit-angle: 0deg;
+}
+.rps-orbit-icon.paper {
+  animation: orbit-planet 6s linear infinite;
+  --orbit-angle: 120deg;
+}
+.rps-orbit-icon.scissors {
+  animation: orbit-planet 6s linear infinite;
+  --orbit-angle: 240deg;
+}
+
+@keyframes orbit-planet {
+  0%   { transform: translate(-50%, -50%) rotate(var(--orbit-angle)) translateX(78px) rotate(calc(-1 * var(--orbit-angle))); }
+  100% { transform: translate(-50%, -50%) rotate(calc(360deg + var(--orbit-angle))) translateX(85px) rotate(calc(-360deg - var(--orbit-angle))); }
+}
+
+.algo-selector {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  margin: 32px 0 24px 0;
+}
+
+.algo-btn {
+  background: #e3f0fb; /* much lighter blue for unselected */
+  color: #1976d2;
+  padding: 14px 32px;
+  border-radius: 32px;
+  font-size: 1.1em;
+  font-weight: bold;
+  cursor: pointer;
+  border: none;
+  transition: background 0.2s, box-shadow 0.2s, color 0.2s;
+  box-shadow: 0 2px 8px #2196f344;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  position: relative;
+}
+
+.algo-btn input[type="radio"] {
+  display: none;
+}
+
+.algo-btn input[type="radio"]:checked + span,
+.algo-btn input[type="radio"]:checked {
+  /* Optional: highlight selected */
+  outline: 2px solid #1976d2;
+  background: #1976d2;
+}
+
+.algo-btn:has(input[type="radio"]:checked) {
+  background: #2196f3;
+  color: #fff;
+  box-shadow: 0 4px 16px #1976d244;
+}
+
+.algo-btn:hover {
+  background: #bbdefb;
+}
+
+.win-circle {
+  display: inline-block;
+  margin-left: 10px;
+  width: 32px;
+  height: 32px;
+  line-height: 32px;
+  border-radius: 50%;
+  background: #eee;
+  color: #333;
+  font-weight: bold;
+  font-size: 1.1em;
+  text-align: center;
+  vertical-align: middle;
+  border: 2px solid #ccc;
+  transition: background 0.3s, color 0.3s, border 0.3s;
+}
+.win-circle.green {
+  background: #43ea7f;
+  color: #fff;
+  border-color: #1bb34a;
+}
+.win-circle.red {
+  background: #ff4f4f;
+  color: #fff;
+  border-color: #c00;
+}
+
+#playerWinCircle, #robotWinCircle {
+  display: inline-block !important;
+  visibility: visible !important;
+  position: static !important;
+  background: #eee !important;
+  color: #333 !important;
+  z-index: 1000 !important;
+}
+
+.autopilot-btn {
+  background: #4be04b;
+  color: #fff;
+  border: none;
+  border-radius: 18px;
+  padding: 4px 18px;
+  font-size: 1em;
+  font-weight: normal;
+  margin-left: 12px;
+  vertical-align: middle;
+  cursor: pointer;
+  box-shadow: 0 1px 4px #4be04b33;
+  transition: background 0.2s, color 0.2s;
+  display: inline-block;
+}
+.autopilot-btn:hover {
+  background: #2db82d;
+  color: #fff;
+}
+
+.autopatterns-btn {
+  background: #43c943;
+  color: #fff;
+  border: none;
+  border-radius: 18px;
+  padding: 4px 18px;
+  font-size: 1em;
+  font-weight: normal;
+  margin-left: 8px;
+  vertical-align: middle;
+  cursor: pointer;
+  box-shadow: 0 1px 4px #43c94333;
+  transition: background 0.2s, color 0.2s;
+  display: inline-block;
+}
+.autopatterns-btn:hover {
+  background: #2b8f2b;
+  color: #fff;
+}
+
+.pie-chart-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  min-width: 240px; /* ensures enough space for chart and legend */
+}
+
+.pie-chart {
+  width: 240px;   /* was 96px */
+  height: 240px;
+  margin-bottom: 12px;
+}
+
+.pie-chart-legend {
+  display: flex;
+  justify-content: center;
+  gap: 18px;
+  margin-top: 8px;
+}
+
+.legend-btn {
+  display: flex;
+  align-items: center;
+  padding: 6px 18px;
+  border-radius: 24px;
+  font-size: 1.1em;
+  font-weight: 500;
+  color: #fff;
+}
+
+.rock-legend {
+  background: #ffb74d;
+}
+.paper-legend {
+  background: #64b5f6;
+}
+.scissors-legend {
+  background: #e57373;
+}
+
+.legend-icon {
+  font-size: 1.5em;
+  margin-right: 8px;
+}
+
+.ai-logic-table {
+  margin: 24px auto 0 auto;
+  padding: 18px;
+  background: #222;
+  color: #43ea7f;
+  border: 2px solid #43ea7f;
+  border-radius: 18px;
+  min-width: 260px;
+  max-width: 340px;
+  font-size: 1em;
+  box-shadow: 0 2px 16px #43ea7f22;
+}
+.ai-logic-table table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.ai-logic-table th, .ai-logic-table td {
+  border: 1px solid #43ea7f;
+  padding: 6px 10px;
+  text-align: left;
+}
+.ai-logic-table th {
+  background: #222;
+  color: #43ea7f;
+  font-weight: bold;
+}
+.ai-logic-table tr {
+  background: #222;
+}

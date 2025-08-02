@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Rock Paper Scissors AI</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="rps-orbit-title-flex">
+    <img src="img/Logo.png" alt="Logo" class="orbit-logo">
+    <div class="rps-orbit-title">
+      <div class="rps-orbit-circle">
+        <div class="rps-orbit-center">
+          <div class="rps-orbit-100" id="rps-orbit-count">100</div>
+        </div>
+        <span class="rps-orbit-icon rock" id="orbit-rock">🪨</span>
+        <span class="rps-orbit-icon paper" id="orbit-paper">📄</span>
+        <span class="rps-orbit-icon scissors" id="orbit-scissors">✂️</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- <h1>Rock Paper Scissors (100 Game AI)</h1> -->
+
+  <div style="margin-bottom: 32px;">
+    <label for="playerName">Enter your name: </label>
+    <input type="text" id="playerName" placeholder="Your Name">
+    <button id="startBtn" type="button">Start Game</button>
+  </div>
+
+  <div class="algo-selector">
+    <label class="algo-btn">
+      <input type="radio" name="mode" value="random" checked>
+      Random Choice
+    </label>
+    <label class="algo-btn">
+      <input type="radio" name="mode" value="learn30">
+      Learn After 30
+    </label>
+    <label class="algo-btn">
+      <input type="radio" name="mode" value="pattern50">
+      Pattern Matching
+    </label>
+  </div>
+
+  <div id="gameArea" style="display: none;">
+    <h2 id="gameStatus"></h2>
+    <div id="sessionBoard" class="session-board">
+      <div class="score-side">
+        <div>Win: <span id="sessionWin">0</span></div>
+        <div>Loss: <span id="sessionLoss">0</span></div>
+      </div>
+      <div class="score-center">
+        <div>Draw: <span id="sessionDraw">0</span></div>
+      </div>
+      <div class="score-side">
+        <div>Win: <span id="robotWin">0</span></div>
+        <div>Loss: <span id="robotLoss">0</span></div>
+      </div>
+    </div>
+    <div class="game-flex">
+      <div class="pie-chart-container">
+        <div id="playerPieChart" class="pie-chart"></div>
+        <div class="pie-chart-legend">
+          <span class="legend-btn rock-legend"><span class="legend-icon">🪨</span> Rock</span>
+          <span class="legend-btn paper-legend"><span class="legend-icon">📄</span> Paper</span>
+          <span class="legend-btn scissors-legend"><span class="legend-icon">✂️</span> Scissors</span>
+        </div>
+      </div>
+      <div class="player-section">
+        <h3 id="playerHeading">
+          <span id="playerNameDisplay"></span>
+          <span id="playerWinCircle" class="win-circle">0</span>
+          <button id="autopilotBtn" class="autopilot-btn" type="button">Autopilot</button>
+          <button id="autoPatternsBtn" class="autopatterns-btn" type="button">Auto-Patterns</button>
+        </h3>
+        <div class="choices">
+          <button class="choiceBtn" data-choice="rock">
+            🪨 Rock
+            <span class="btn-stats" id="rockStats">W-0/L-0/D-0</span>
+          </button>
+          <button class="choiceBtn" data-choice="paper">
+            📄 Paper
+            <span class="btn-stats" id="paperStats">W-0/L-0/D-0</span>
+          </button>
+
+          <button class="choiceBtn" data-choice="scissors">
+            ✂️ Scissors
+            <span class="btn-stats" id="scissorsStats">W-0/L-0/D-0</span>
+          </button>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <div class="ai-section">
+        <h3>
+          Robot
+          <span id="robotWinCircle" class="win-circle">0</span>
+        </h3>
+        <div id="robotChoiceDisplay"></div>
+      </div>
+    </div>
+  </div>
+
+  <hr style="margin: 32px 0 16px 0;">
+
+  <div>
+    <h2>Last 20 Games</h2>
+    <table id="historyTable" class="history-table">
+      <thead>
+        <tr>
+          <th>Player Name</th>
+          <th>Model</th>
+          <th>Wins</th>
+          <th>Losses</th>
+          <th>Draws</th>
+          <th>Winner</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- rows rendered by JS -->
+      </tbody>
+    </table>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
