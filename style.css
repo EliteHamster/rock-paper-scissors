@@ -403,7 +403,7 @@ body {
 }
 
 .algo-btn {
-  background: #e3f0fb; /* much lighter blue for unselected */
+  background: #e3f0fb;
   color: #1976d2;
   padding: 14px 32px;
   border-radius: 32px;
@@ -439,6 +439,35 @@ body {
 
 .algo-btn:hover {
   background: #bbdefb;
+}
+
+/* Prevent text selection entirely on algo buttons */
+.algo-btn, .algo-btn * {
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+}
+
+/* Custom text selection color for algo buttons */
+.algo-btn::selection,
+.algo-btn *::selection {
+  background: #1976d2 !important; /* Medium blue - matches selected button background */
+  color: white !important; /* White text - matches selected button text */
+}
+
+/* For Firefox */
+.algo-btn::-moz-selection,
+.algo-btn *::-moz-selection {
+  background: #1976d2 !important;
+  color: white !important;
+}
+
+/* For Webkit browsers */
+.algo-btn::-webkit-selection,
+.algo-btn *::-webkit-selection {
+  background: #1976d2 !important;
+  color: white !important;
 }
 
 .win-circle {
@@ -591,4 +620,113 @@ body {
 }
 .ai-logic-table tr {
   background: #222;
+}
+
+/* Tooltip styles */
+.tooltip-hover {
+  position: relative;
+  cursor: help;
+}
+
+.tooltip-hover::before {
+  content: attr(data-tooltip);
+  position: absolute;
+  top: 50%;
+  left: 120%;
+  transform: translateY(-50%);
+  background: linear-gradient(135deg, #2196f3, #1976d2);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 0.35em;
+  font-weight: normal;
+  text-align: center;
+  white-space: normal;
+  width: 200px;
+  line-height: 1.4;
+  box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3);
+  border: 2px solid #64b5f6;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+  z-index: 1000;
+  pointer-events: none;
+}
+
+.tooltip-hover::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 110%;
+  transform: translateY(-50%);
+  width: 0;
+  height: 0;
+  border-top: 8px solid transparent;
+  border-bottom: 8px solid transparent;
+  border-right: 8px solid #2196f3;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+  z-index: 1001;
+}
+
+.tooltip-hover:hover::before,
+.tooltip-hover:hover::after {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Green tooltip styles */
+.tooltip-hover-green {
+  position: relative;
+  cursor: help;
+  user-select: none; /* Prevents text selection */
+}
+
+.tooltip-hover-green::before {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 120%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, #4caf50, #388e3c);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 0.7em;
+  font-weight: normal;
+  text-align: center;
+  white-space: normal;
+  width: 200px;
+  line-height: 1.4;
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+  border: 2px solid #81c784;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+  z-index: 1000;
+  pointer-events: none;
+}
+
+.tooltip-hover-green::after {
+  content: '';
+  position: absolute;
+  bottom: 110%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-top: 8px solid #4caf50;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+  z-index: 1001;
+}
+
+.tooltip-hover-green:hover::before,
+.tooltip-hover-green:hover::after {
+  opacity: 1;
+  visibility: visible;
 }

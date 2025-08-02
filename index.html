@@ -12,7 +12,7 @@
     <div class="rps-orbit-title">
       <div class="rps-orbit-circle">
         <div class="rps-orbit-center">
-          <div class="rps-orbit-100" id="rps-orbit-count">100</div>
+          <div class="rps-orbit-100 tooltip-hover" id="rps-orbit-count" data-tooltip="You have 100 games to see who wins the most between you and the robot. You can select the robot's approach from the options below.">100</div>
         </div>
         <span class="rps-orbit-icon rock" id="orbit-rock">🪨</span>
         <span class="rps-orbit-icon paper" id="orbit-paper">📄</span>
@@ -30,17 +30,17 @@
   </div>
 
   <div class="algo-selector">
-    <label class="algo-btn">
+    <label class="algo-btn tooltip-hover-green" data-tooltip="The robot will make completely random choices on every turn.">
       <input type="radio" name="mode" value="random" checked>
-      Random Choice
+      <span>Random Choice</span>
     </label>
-    <label class="algo-btn">
+    <label class="algo-btn tooltip-hover-green" data-tooltip="The robot will randomly choose for 30 turns, whilst watching you and learning. After 30 turns, it will start using what it has learned against you.">
       <input type="radio" name="mode" value="learn30">
-      Learn After 30
+      <span>Learn After 30</span>
     </label>
-    <label class="algo-btn">
+    <label class="algo-btn tooltip-hover-green" data-tooltip="The robot will watch any patterns you use for 30 turns, and then start countering them.">
       <input type="radio" name="mode" value="pattern50">
-      Pattern Matching
+      <span>Pattern Matching</span>
     </label>
   </div>
 
