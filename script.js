@@ -97,6 +97,10 @@ startBtn.onclick = () => {
   // Re-enable choice buttons
   choiceBtns.forEach(btn => btn.disabled = false);
 
+  // Hide non-selected algorithm buttons during game
+  const algoSelector = document.querySelector('.algo-selector');
+  algoSelector.classList.add('game-active');
+
   renderPlayerPieChart();
 };
 
@@ -163,7 +167,13 @@ choiceBtns.forEach(btn => {
       gameStatus.textContent = `Game Over! Final Score - You: ${session.win}, Robot: ${session.loss}, Draws: ${session.draw}`;
       addGameToHistory();
       renderHistoryTable();
-      // Disable buttons
+      gameStatus.textContent = "Game Complete! Click Start Game for another round.";
+
+      // Show all algorithm buttons again
+      const algoSelector = document.querySelector('.algo-selector');
+      algoSelector.classList.remove('game-active');
+
+      // Disable choice buttons
       choiceBtns.forEach(btn => btn.disabled = true);
     }
 

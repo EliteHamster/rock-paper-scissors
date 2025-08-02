@@ -470,6 +470,16 @@ body {
   color: white !important;
 }
 
+/* Hide non-selected buttons during game */
+.algo-selector.game-active .algo-btn:not(:has(input[type="radio"]:checked)) {
+  display: none;
+}
+
+/* Smooth transitions for showing/hiding buttons */
+.algo-btn {
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
 .win-circle {
   display: inline-block;
   margin-left: 10px;
