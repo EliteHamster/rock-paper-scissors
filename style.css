@@ -585,12 +585,12 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  min-width: 240px; /* ensures enough space for chart and legend */
+  min-width: 240px; /* adequate space to prevent overlap */
 }
 
 .pie-chart {
-  width: 240px;   /* was 96px */
-  height: 240px;
+  width: 192px;   /* reduced by 20% from 240px */
+  height: 192px;
   margin-bottom: 12px;
 }
 

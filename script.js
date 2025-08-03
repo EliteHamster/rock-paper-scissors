@@ -531,7 +531,7 @@ function renderPlayerPieChart() {
   // If no moves yet, show empty chart
   if (total === 0) {
     pieDiv.innerHTML = `
-      <svg width="240" height="240" viewBox="0 0 80 80">
+      <svg width="192" height="192" viewBox="0 0 80 80">
         <circle r="40" cx="40" cy="40" fill="#eee"/>
         <text x="40" y="45" text-anchor="middle" font-size="8" fill="#666">No moves yet</text>
       </svg>
@@ -544,7 +544,7 @@ function renderPlayerPieChart() {
   const paperAngle = (counts.paper / total) * 360;
   const scissorsAngle = (counts.scissors / total) * 360;
 
-  let svg = `<svg width="240" height="240" viewBox="0 0 80 80">`;
+  let svg = `<svg width="192" height="192" viewBox="0 0 80 80">`;
   
   // Background circle
   svg += `<circle r="40" cx="40" cy="40" fill="#eee"/>`;
