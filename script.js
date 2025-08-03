@@ -554,18 +554,35 @@ function renderPlayerPieChart() {
   // Add rock slice if it exists
   if (rockAngle > 0) {
     svg += `<path d="${describeArc(40,40,40,currentAngle,currentAngle+rockAngle)}" fill="#ffb74d"/>`;
+    
+    // Add rock emoji on the slice
+    const midAngle = currentAngle + rockAngle / 2;
+    const iconPos = polarToCartesian(40, 40, 25, midAngle); // 25 is radius from center to place icon
+    svg += `<text x="${iconPos.x}" y="${iconPos.y}" text-anchor="middle" dominant-baseline="central" font-size="8">🪨</text>`;
+    
     currentAngle += rockAngle;
   }
   
   // Add paper slice if it exists
   if (paperAngle > 0) {
     svg += `<path d="${describeArc(40,40,40,currentAngle,currentAngle+paperAngle)}" fill="#64b5f6"/>`;
+    
+    // Add paper emoji on the slice
+    const midAngle = currentAngle + paperAngle / 2;
+    const iconPos = polarToCartesian(40, 40, 25, midAngle);
+    svg += `<text x="${iconPos.x}" y="${iconPos.y}" text-anchor="middle" dominant-baseline="central" font-size="8">📄</text>`;
+    
     currentAngle += paperAngle;
   }
   
   // Add scissors slice if it exists
   if (scissorsAngle > 0) {
     svg += `<path d="${describeArc(40,40,40,currentAngle,currentAngle+scissorsAngle)}" fill="#e57373"/>`;
+    
+    // Add scissors emoji on the slice
+    const midAngle = currentAngle + scissorsAngle / 2;
+    const iconPos = polarToCartesian(40, 40, 25, midAngle);
+    svg += `<text x="${iconPos.x}" y="${iconPos.y}" text-anchor="middle" dominant-baseline="central" font-size="8">✂️</text>`;
   }
   
   svg += `</svg>`;

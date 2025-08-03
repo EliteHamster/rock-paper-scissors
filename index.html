@@ -62,11 +62,6 @@
     <div class="game-flex">
       <div class="pie-chart-container">
         <div id="playerPieChart" class="pie-chart"></div>
-        <div class="pie-chart-legend">
-          <span class="legend-btn rock-legend"><span class="legend-icon">🪨</span> Rock</span>
-          <span class="legend-btn paper-legend"><span class="legend-icon">📄</span> Paper</span>
-          <span class="legend-btn scissors-legend"><span class="legend-icon">✂️</span> Scissors</span>
-        </div>
       </div>
       <div class="player-section">
         <h3 id="playerHeading">
@@ -97,11 +92,18 @@
           Robot
           <span id="robotWinCircle" class="win-circle">0</span>
         </h3>
-        <div class="choices">
-          <button id="robotChoiceBtn" class="choiceBtn robot-choice" disabled>
-            🤖 Thinking...
-            <span class="btn-stats robot-stats">W-0/L-0/D-0</span>
-          </button>
+        <div class="robot-area">
+          <div class="choices">
+            <button id="robotChoiceBtn" class="choiceBtn robot-choice" disabled>
+              🤖 Thinking...
+              <span class="btn-stats robot-stats">W-0/L-0/D-0</span>
+            </button>
+          </div>
+          <div id="robotDecisionBox" class="robot-decision-box">
+            <div class="decision-content">
+              <!-- Robot decision-making info will go here -->
+            </div>
+          </div>
         </div>
         <div id="robotChoiceDisplay"></div>
       </div>

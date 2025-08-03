@@ -11,11 +11,16 @@ body {
 
 .choices button {
   position: relative;
-  min-width: 110px;
+  min-width: 320px;
+  max-width: 320px;
+  width: 320px;
   margin-bottom: 10px;
   font-size: 24px;
   margin: 10px;
   padding: 10px 20px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .scoreboard {
@@ -26,19 +31,38 @@ body {
 .game-flex {
   display: flex;
   align-items: flex-start;
-  gap: 40px;
+  justify-content: center;
+  gap: 20px;
   margin-top: 20px;
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .player-section, .ai-section {
-  flex: 1;
+  flex: 0 0 auto;
   text-align: center;
+  min-width: 360px;
+}
+
+/* Player choices grid layout - always 2 top, 1 bottom */
+.player-section .choices {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto auto;
+  gap: 10px;
+  justify-items: center;
+}
+
+.player-section .choices button:nth-child(3) {
+  /* Scissors on bottom row, spanning both columns */
+  grid-column: 1 / 3;
 }
 
 .divider {
   width: 2px;
   background: #ccc;
-  height: 100px;
+  height: 200px;
   margin: 0 20px;
 }
 
@@ -748,6 +772,12 @@ body {
   border: 2px solid #ddd;
   border-radius: 8px;
   cursor: default;
+  width: 320px !important; /* Fixed width to prevent size changes */
+  min-width: 320px;
+  max-width: 320px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .robot-choice:disabled {
@@ -770,4 +800,32 @@ body {
 .robot-stats {
   background: #9c27b0 !important;
   color: #fff;
+}
+
+/* Robot Area Layout */
+.robot-area {
+  display: flex;
+  align-items: flex-start;
+  gap: 15px;
+}
+
+.robot-area .choices {
+  flex-shrink: 0;
+}
+
+/* Robot Decision Box */
+.robot-decision-box {
+  background: #2a2a2a;
+  border: 2px solid #4caf50;
+  border-radius: 12px;
+  padding: 15px;
+  min-width: 200px;
+  min-height: 80px;
+  flex-grow: 1;
+}
+
+.decision-content {
+  color: #e0e0e0;
+  font-size: 0.9em;
+  line-height: 1.4;
 }
