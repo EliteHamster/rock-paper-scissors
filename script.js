@@ -9,6 +9,7 @@ const playerHeading = document.getElementById('playerHeading');
 const aiChoiceDisplay = document.getElementById('robotChoiceDisplay');
 const orbitCount = document.getElementById('rps-orbit-count');
 const playerNameDisplay = document.getElementById('playerNameDisplay');
+const robotChoiceBtn = document.getElementById('robotChoiceBtn');
 
 let mode = "random";
 let humanName = "";
@@ -101,13 +102,36 @@ startBtn.onclick = () => {
   const algoSelector = document.querySelector('.algo-selector');
   algoSelector.classList.add('game-active');
 
+  // Mark the selected algorithm button
+  const allBtns = document.querySelectorAll('.algo-btn');
+  allBtns.forEach(btn => btn.classList.remove('selected'));
+  const selectedBtn = document.querySelector('.algo-btn input[type="radio"]:checked');
+  if (selectedBtn) {
+    selectedBtn.closest('.algo-btn').classList.add('selected');
+  }
+
   renderPlayerPieChart();
+
+  // Initialize robot button
+  const robotBtn = document.getElementById('robotChoiceBtn');
+  if (robotBtn) {
+    robotBtn.innerHTML = `
+      🤖 Thinking...
+      <span class="btn-stats robot-stats">W-0/L-0/D-0</span>
+    `;
+  }
+
+  startRobotThinking();
 };
 
 choiceBtns.forEach(btn => {
   btn.onclick = () => {
     const humanMove = btn.dataset.choice;
     const computerMove = getComputerMove(humanMove);
+    
+    // Stop robot thinking and show final choice
+    stopRobotThinking(computerMove);
+    
     const result = getResult(humanMove, computerMove);
 
     // Update pattern learning (Learn After 30)
@@ -155,7 +179,7 @@ choiceBtns.forEach(btn => {
 
     updateScoreboard();
     gameStatus.textContent = `${humanName} played ${humanMove} — Computer played ${computerMove}. You ${result}!`;
-    aiChoiceDisplay.textContent = getChoiceEmoji(computerMove) + " " + capitalize(computerMove);
+    aiChoiceDisplay.textContent = "";
 
     // Update counter
     if (orbitCount) {
@@ -172,13 +196,40 @@ choiceBtns.forEach(btn => {
       // Show all algorithm buttons again
       const algoSelector = document.querySelector('.algo-selector');
       algoSelector.classList.remove('game-active');
+      // Remove selected class from all buttons
+      document.querySelectorAll('.algo-btn').forEach(btn => btn.classList.remove('selected'));
+
+      // Stop robot thinking completely
+      clearInterval(robotThinkingInterval);
+      robotThinkingInterval = null; // Clear the reference
+      const robotBtn = document.getElementById('robotChoiceBtn');
+      if (robotBtn) {
+        robotBtn.classList.remove('robot-thinking');
+        // Keep the final choice displayed without any animation
+        // Force update the button to ensure it shows the final choice
+        const choiceData = robotChoices.find(c => c.name.toLowerCase() === computerMove);
+        if (choiceData) {
+          robotBtn.innerHTML = `
+            ${choiceData.emoji} ${choiceData.name}
+            <span class="btn-stats robot-stats">W-${session.loss}/L-${session.win}/D-${session.draw}</span>
+          `;
+        }
+      }
 
       // Disable choice buttons
       choiceBtns.forEach(btn => btn.disabled = true);
+      
+      // Don't restart thinking animation since game is over
+      return;
     }
 
     // Update pie chart
     renderPlayerPieChart();
+    
+    // Start thinking again for next round (if game not over)
+    if (session.games < 100) {
+      setTimeout(startRobotThinking, 2000); // 2 second pause to see robot's choice
+    }
   };
 });
 
@@ -300,6 +351,15 @@ function updateScoreboard() {
     `W-${session.moveStats.paper.win}/L-${session.moveStats.paper.loss}/D-${session.moveStats.paper.draw}`;
   document.getElementById('scissorsStats').textContent =
     `W-${session.moveStats.scissors.win}/L-${session.moveStats.scissors.loss}/D-${session.moveStats.scissors.draw}`;
+
+  // Update robot button stats if not currently thinking
+  const robotBtn = document.getElementById('robotChoiceBtn');
+  if (robotBtn && !robotBtn.classList.contains('robot-thinking')) {
+    const robotStatsSpan = robotBtn.querySelector('.robot-stats');
+    if (robotStatsSpan) {
+      robotStatsSpan.textContent = `W-${session.loss}/L-${session.win}/D-${session.draw}`;
+    }
+  }
 }
 
 function addGameToHistory() {
@@ -532,5 +592,69 @@ function polarToCartesian(cx, cy, r, angle){
   };
 }
 
-// Call this after each move and on game start
-// Add to your choiceBtns.forEach(btn => { btn.onclick = ... }) and startBtn.onclick:
+// Robot thinking animation functions
+let robotThinkingInterval;
+const robotChoices = [
+  { emoji: '🪨', name: 'Rock' },
+  { emoji: '📄', name: 'Paper' },
+  { emoji: '✂️', name: 'Scissors' }
+];
+
+function startRobotThinking() {
+  // Don't start thinking if game is over
+  if (session.games >= 100) {
+    console.log('Game is over, not starting robot thinking');
+    return;
+  }
+  
+  const robotBtn = document.getElementById('robotChoiceBtn');
+  if (!robotBtn) {
+    console.log('Robot button not found');
+    return;
+  }
+  
+  // Clear any existing interval first
+  if (robotThinkingInterval) {
+    clearInterval(robotThinkingInterval);
+  }
+  
+  console.log('Starting robot thinking animation');
+  robotBtn.classList.add('robot-thinking');
+  robotThinkingInterval = setInterval(() => {
+    // Double check that game isn't over
+    if (session.games >= 100) {
+      clearInterval(robotThinkingInterval);
+      robotThinkingInterval = null;
+      robotBtn.classList.remove('robot-thinking');
+      return;
+    }
+    
+    const randomChoice = robotChoices[Math.floor(Math.random() * 3)];
+    robotBtn.innerHTML = `
+      ${randomChoice.emoji} ${randomChoice.name}
+      <span class="btn-stats robot-stats">W-${session.loss}/L-${session.win}/D-${session.draw}</span>
+    `;
+  }, 200);
+}
+
+function stopRobotThinking(finalChoice) {
+  const robotBtn = document.getElementById('robotChoiceBtn');
+  if (!robotBtn) {
+    return;
+  }
+  
+  // Force clear the interval
+  if (robotThinkingInterval) {
+    clearInterval(robotThinkingInterval);
+    robotThinkingInterval = null;
+  }
+  robotBtn.classList.remove('robot-thinking');
+  
+  const choiceData = robotChoices.find(c => c.name.toLowerCase() === finalChoice);
+  if (choiceData) {
+    robotBtn.innerHTML = `
+      ${choiceData.emoji} ${choiceData.name}
+      <span class="btn-stats robot-stats">W-${session.loss}/L-${session.win}/D-${session.draw}</span>
+    `;
+  }
+}
