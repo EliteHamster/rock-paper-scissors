@@ -3,7 +3,7 @@ const playerNameInput = document.getElementById('playerName');
 const gameArea = document.getElementById('gameArea');
 const choiceBtns = document.querySelectorAll('.choiceBtn');
 const gameStatus = document.getElementById('gameStatus');
-const sessionScore = document.getElementById('sessionScore');
+const sessionScore = document.getElementById('sessionBoard');
 const allTimeScore = document.getElementById('allTimeScore');
 const playerHeading = document.getElementById('playerHeading');
 const aiChoiceDisplay = document.getElementById('robotChoiceDisplay');
@@ -117,7 +117,7 @@ startBtn.onclick = () => {
   if (robotBtn) {
     robotBtn.innerHTML = `
       🤖 Thinking...
-      <span class="btn-stats robot-stats">W-0/L-0/D-0</span>
+      <span class="btn-stats robot-stats">Wins: 0</span>
     `;
   }
 
@@ -211,7 +211,7 @@ choiceBtns.forEach(btn => {
         if (choiceData) {
           robotBtn.innerHTML = `
             ${choiceData.emoji} ${choiceData.name}
-            <span class="btn-stats robot-stats">W-${session.loss}/L-${session.win}/D-${session.draw}</span>
+            <span class="btn-stats robot-stats">Wins: ${session.loss}</span>
           `;
         }
       }
@@ -345,19 +345,16 @@ function updateScoreboard() {
   // If tie, both remain grey
 
   // Per-move stats
-  document.getElementById('rockStats').textContent =
-    `W-${session.moveStats.rock.win}/L-${session.moveStats.rock.loss}/D-${session.moveStats.rock.draw}`;
-  document.getElementById('paperStats').textContent =
-    `W-${session.moveStats.paper.win}/L-${session.moveStats.paper.loss}/D-${session.moveStats.paper.draw}`;
-  document.getElementById('scissorsStats').textContent =
-    `W-${session.moveStats.scissors.win}/L-${session.moveStats.scissors.loss}/D-${session.moveStats.scissors.draw}`;
+  document.getElementById('rockStats').textContent = `Wins: ${session.moveStats.rock.win}`;
+  document.getElementById('paperStats').textContent = `Wins: ${session.moveStats.paper.win}`;
+  document.getElementById('scissorsStats').textContent = `Wins: ${session.moveStats.scissors.win}`;
 
   // Update robot button stats if not currently thinking
   const robotBtn = document.getElementById('robotChoiceBtn');
   if (robotBtn && !robotBtn.classList.contains('robot-thinking')) {
     const robotStatsSpan = robotBtn.querySelector('.robot-stats');
     if (robotStatsSpan) {
-      robotStatsSpan.textContent = `W-${session.loss}/L-${session.win}/D-${session.draw}`;
+      robotStatsSpan.textContent = `Wins: ${session.loss}`;
     }
   }
 }
@@ -649,7 +646,7 @@ function startRobotThinking() {
     const randomChoice = robotChoices[Math.floor(Math.random() * 3)];
     robotBtn.innerHTML = `
       ${randomChoice.emoji} ${randomChoice.name}
-      <span class="btn-stats robot-stats">W-${session.loss}/L-${session.win}/D-${session.draw}</span>
+      <span class="btn-stats robot-stats">Wins: ${session.loss}</span>
     `;
   }, 200);
 }
@@ -671,7 +668,7 @@ function stopRobotThinking(finalChoice) {
   if (choiceData) {
     robotBtn.innerHTML = `
       ${choiceData.emoji} ${choiceData.name}
-      <span class="btn-stats robot-stats">W-${session.loss}/L-${session.win}/D-${session.draw}</span>
+      <span class="btn-stats robot-stats">Wins: ${session.loss}</span>
     `;
   }
 }
