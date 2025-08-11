@@ -93,6 +93,12 @@ startBtn.onclick = () => {
   playerNameDisplay.textContent = humanName;
   aiChoiceDisplay.textContent = "";
 
+  // Clear the AI decision box for new game
+  const decisionContent = document.querySelector('.decision-content');
+  if (decisionContent) {
+    decisionContent.innerHTML = "";
+  }
+
   if (orbitCount) orbitCount.textContent = 100;
 
   // Re-enable choice buttons
@@ -178,6 +184,10 @@ choiceBtns.forEach(btn => {
     }
 
     updateScoreboard();
+    
+    // Update decision box with the result
+    updateDecisionBox(computerMove, lastDecisionReason, result);
+    
     gameStatus.textContent = `${humanName} played ${humanMove} — Computer played ${computerMove}. You ${result}!`;
     aiChoiceDisplay.textContent = "";
 
@@ -244,16 +254,22 @@ function capitalize(str) {
   return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
+let lastDecisionReason = ""; // Store the last decision reason
+
 function getComputerMove(humanMove) {
   const randomMove = () => ["rock", "paper", "scissors"][Math.floor(Math.random() * 3)];
 
   if (mode === "random") {
-    return randomMove();
+    const move = randomMove();
+    lastDecisionReason = "random choice selected it";
+    return move;
   }
 
   if (mode === "learn30") {
     if (session.games < 30) {
-      return randomMove();
+      const move = randomMove();
+      lastDecisionReason = "still learning your patterns (random choice)";
+      return move;
     }
 
     // 1. Learn player's overall tendencies
@@ -266,40 +282,97 @@ function getComputerMove(humanMove) {
 
     // 2. Predict what human will play next
     let predicted = Object.entries(probs).sort((a, b) => b[1] - a[1])[0][0];
+    let reason = `analysis shows you favor ${predicted} (${Math.round(probs[predicted] * 100)}%)`;
 
     // 3. After loss: learn what human plays next
     if (aiState.lastResult === 'lose') {
       const prev = aiState.lastHumanMove;
       const nextMoveAfterLoss = aiState.afterLossMap[prev];
       if (nextMoveAfterLoss) {
-        predicted = Object.entries(nextMoveAfterLoss).sort((a, b) => b[1] - a[1])[0][0];
+        const mostLikely = Object.entries(nextMoveAfterLoss).sort((a, b) => b[1] - a[1])[0];
+        predicted = mostLikely[0];
+        reason = `after losing, you typically play ${predicted} next (${mostLikely[1]} times)`;
       }
     }
 
-    return counterMove(predicted);
+    const move = counterMove(predicted);
+    lastDecisionReason = reason;
+    return move;
   }
 
   if (mode === "pattern50") {
     if (session.games < 53) {
-      return randomMove();
+      const move = randomMove();
+      lastDecisionReason = "still learning your patterns (random choice)";
+      return move;
     }
 
     const last3 = session.moves.slice(-3).join(",");
     const found = aiState.patterns.find(p => p.seq === last3);
     if (found) {
-      return counterMove(found.next);
+      const patternCount = aiState.patterns.filter(p => p.seq === last3).length;
+      const move = counterMove(found.next);
+      lastDecisionReason = `human player did ${last3.replace(/,/g, ', ')} (${patternCount}) times already`;
+      return move;
     } else {
-      return randomMove();
+      const move = randomMove();
+      lastDecisionReason = `no pattern found for ${last3.replace(/,/g, ', ')} (random choice)`;
+      return move;
     }
   }
 
-  return randomMove();
+  const move = randomMove();
+  lastDecisionReason = "default random choice";
+  return move;
 }
 
 function counterMove(move) {
   if (move === "rock") return "paper";
   if (move === "paper") return "scissors";
   return "rock";
+}
+
+function updateDecisionBox(robotMove, reason, gameResult = null) {
+  const decisionContent = document.querySelector('.decision-content');
+  if (decisionContent) {
+    // Use session.games directly since it's already been incremented when this function is called
+    const turnNumber = session.games;
+    let message = `${turnNumber}. Robot chose ${robotMove} because ${reason}.`;
+    
+    // Add result indicator if game result is provided
+    if (gameResult) {
+      let resultClass = '';
+      let resultText = '';
+      
+      // Note: result is from human perspective, so flip for robot
+      if (gameResult === 'win') {
+        resultClass = 'result-loss'; // Human won, robot lost
+        resultText = 'L';
+      } else if (gameResult === 'lose') {
+        resultClass = 'result-win'; // Human lost, robot won
+        resultText = 'W';
+      } else if (gameResult === 'draw') {
+        resultClass = 'result-draw';
+        resultText = 'D';
+      }
+      
+      message += ` <span class="result-indicator ${resultClass}">${resultText}</span>`;
+    }
+    
+    // Add the new message to the top, keep ALL previous messages for the current game
+    const currentContent = decisionContent.innerHTML;
+    if (currentContent.trim()) {
+      decisionContent.innerHTML = message + '<br><br>' + currentContent;
+    } else {
+      decisionContent.innerHTML = message;
+    }
+    
+    // No limit on messages - keep all turns for the current game
+    // (Messages will be cleared when a new game starts)
+    
+    // Scroll to top to show the latest message
+    decisionContent.scrollTop = 0;
+  }
 }
 
 function getResult(human, computer) {
