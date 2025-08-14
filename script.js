@@ -89,7 +89,8 @@ startBtn.onclick = () => {
   };
   updateScoreboard();
   renderHistoryTable();
-  gameStatus.textContent = "Game Started!";
+  // Remove old game status text - replaced with dynamic result display
+  // gameStatus.textContent = "Game Started!";
   playerNameDisplay.textContent = humanName;
   aiChoiceDisplay.textContent = "";
 
@@ -188,7 +189,11 @@ choiceBtns.forEach(btn => {
     // Update decision box with the result
     updateDecisionBox(computerMove, lastDecisionReason, result);
     
-    gameStatus.textContent = `${humanName} played ${humanMove} — Computer played ${computerMove}. You ${result}!`;
+    // Show dynamic result with animations
+    showDynamicResult(result);
+    
+    // Remove old static game status text
+    // gameStatus.textContent = `${humanName} played ${humanMove} — Computer played ${computerMove}. You ${result}!`;
     aiChoiceDisplay.textContent = "";
 
     // Update counter
@@ -198,10 +203,11 @@ choiceBtns.forEach(btn => {
 
     // End game logic
     if (session.games >= 100) {
-      gameStatus.textContent = `Game Over! Final Score - You: ${session.win}, Robot: ${session.loss}, Draws: ${session.draw}`;
+      // Remove old static text - replaced with dynamic result display
+      // gameStatus.textContent = `Game Over! Final Score - You: ${session.win}, Robot: ${session.loss}, Draws: ${session.draw}`;
       addGameToHistory();
       renderHistoryTable();
-      gameStatus.textContent = "Game Complete! Click Start Game for another round.";
+      // gameStatus.textContent = "Game Complete! Click Start Game for another round.";
 
       // Show all algorithm buttons again
       const algoSelector = document.querySelector('.algo-selector');
@@ -743,5 +749,208 @@ function stopRobotThinking(finalChoice) {
       ${choiceData.emoji} ${choiceData.name}
       <span class="btn-stats robot-stats">Wins: ${session.loss}</span>
     `;
+  }
+}
+
+// Dynamic Result Display System
+let currentResultAnimation = null;
+let isAnimationActive = false;
+
+function showDynamicResult(result) {
+  const dynamicResult = document.getElementById('dynamicResult');
+  const drawCounter = document.getElementById('drawCounter');
+  
+  if (!dynamicResult) return;
+  
+  // If animation is already running, speed it up and interrupt
+  if (isAnimationActive && currentResultAnimation) {
+    interruptCurrentAnimation();
+  }
+  
+  isAnimationActive = true;
+  
+  // Clear any existing animations
+  dynamicResult.className = 'dynamic-result';
+  dynamicResult.innerHTML = '';
+  
+  // Set the text and style based on result
+  let resultText = '';
+  let resultClass = '';
+  
+  if (result === 'win') {
+    resultText = 'You Win!';
+    resultClass = 'win';
+  } else if (result === 'lose') {
+    resultText = 'You Lose!';
+    resultClass = 'lose';
+  } else if (result === 'draw') {
+    resultText = "It's a Draw!";
+    resultClass = 'draw';
+  }
+  
+  dynamicResult.textContent = resultText;
+  
+  // Fade in with pulse animation
+  const showTimeout = setTimeout(() => {
+    dynamicResult.classList.add('show', resultClass);
+  }, 100);
+  
+  // Create particle effects after shorter delay for rapid play
+  const particleTimeout = setTimeout(() => {
+    createParticleEffect(result, dynamicResult);
+  }, 1000); // Reduced from 2000ms to 1000ms
+  
+  // Store timeouts for potential interruption
+  currentResultAnimation = {
+    showTimeout,
+    particleTimeout,
+    result,
+    startTime: Date.now()
+  };
+}
+
+function interruptCurrentAnimation() {
+  if (!currentResultAnimation) return;
+  
+  // Clear existing timeouts
+  clearTimeout(currentResultAnimation.showTimeout);
+  clearTimeout(currentResultAnimation.particleTimeout);
+  
+  const dynamicResult = document.getElementById('dynamicResult');
+  const elapsed = Date.now() - currentResultAnimation.startTime;
+  
+  // If animation just started, fast-forward to particle stage
+  if (elapsed < 500) {
+    // Skip to particle effect immediately
+    setTimeout(() => {
+      createParticleEffect(currentResultAnimation.result, dynamicResult);
+    }, 50);
+  } else {
+    // If we're mid-animation, speed up the current particles and finish
+    speedUpCurrentParticles();
+    setTimeout(() => {
+      finishAnimation();
+    }, 200);
+  }
+}
+
+function speedUpCurrentParticles() {
+  // Find all current particles and speed them up
+  const particles = document.querySelectorAll('.particle');
+  particles.forEach(particle => {
+    particle.style.transition = 'all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+  });
+}
+
+function createParticleEffect(result, sourceElement) {
+  const sourceRect = sourceElement.getBoundingClientRect();
+  const particleCount = 8; // Reduced from 12 for faster completion
+  let targetElement;
+  let targetRect;
+  
+  // Determine target based on result
+  if (result === 'win') {
+    targetElement = document.getElementById('playerWinCircle');
+  } else if (result === 'lose') {
+    targetElement = document.getElementById('robotWinCircle');
+  } else if (result === 'draw') {
+    targetElement = document.getElementById('drawCounter');
+    // Show draw counter
+    targetElement.classList.add('show');
+  }
+  
+  if (!targetElement) return;
+  targetRect = targetElement.getBoundingClientRect();
+  
+  // Create particles
+  for (let i = 0; i < particleCount; i++) {
+    createParticle(sourceRect, targetRect, result, i);
+  }
+  
+  // Hide the source text with disintegration effect
+  sourceElement.style.animation = 'disintegrate 0.6s ease forwards'; // Faster disintegration
+  
+  // After particles arrive, update counter and pulse
+  setTimeout(() => {
+    updateScoreCounter(result);
+    sourceElement.classList.remove('show');
+    sourceElement.style.animation = '';
+    finishAnimation();
+  }, 800); // Reduced from 1200ms
+}
+
+function finishAnimation() {
+  isAnimationActive = false;
+  currentResultAnimation = null;
+}
+
+function createParticle(sourceRect, targetRect, result, index) {
+  const particle = document.createElement('div');
+  particle.className = `particle ${result}`;
+  
+  // Set particle content based on result
+  if (result === 'win') {
+    particle.textContent = '🎉';
+  } else if (result === 'lose') {
+    particle.textContent = '💥';
+  } else if (result === 'draw') {
+    particle.textContent = '⚖️';
+  }
+  
+  // Random starting position around source
+  const startX = sourceRect.left + sourceRect.width / 2 + (Math.random() - 0.5) * 100;
+  const startY = sourceRect.top + sourceRect.height / 2 + (Math.random() - 0.5) * 50;
+  
+  // Target position
+  const endX = targetRect.left + targetRect.width / 2;
+  const endY = targetRect.top + targetRect.height / 2;
+  
+  particle.style.position = 'fixed';
+  particle.style.left = startX + 'px';
+  particle.style.top = startY + 'px';
+  particle.style.zIndex = '1000';
+  particle.style.pointerEvents = 'none';
+  
+  document.body.appendChild(particle);
+  
+  // Animate to target with slight delay for each particle (reduced delay)
+  setTimeout(() => {
+    particle.style.transition = 'all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94)'; // Faster transition
+    particle.style.left = endX + 'px';
+    particle.style.top = endY + 'px';
+    particle.style.transform = 'scale(0.2)';
+    particle.style.opacity = '0';
+    
+    // Remove particle after animation
+    setTimeout(() => {
+      if (particle.parentNode) {
+        particle.parentNode.removeChild(particle);
+      }
+    }, 600); // Reduced cleanup time
+  }, index * 50); // Reduced stagger delay from 100ms to 50ms
+}
+
+function updateScoreCounter(result) {
+  let targetElement;
+  
+  if (result === 'win') {
+    targetElement = document.getElementById('playerWinCircle');
+  } else if (result === 'lose') {
+    targetElement = document.getElementById('robotWinCircle');
+  } else if (result === 'draw') {
+    targetElement = document.getElementById('drawCounter');
+  }
+  
+  if (targetElement) {
+    // Pulse animation
+    targetElement.classList.add('pulse');
+    setTimeout(() => {
+      targetElement.classList.remove('pulse');
+    }, 600);
+    
+    // Update draw counter specifically
+    if (result === 'draw') {
+      targetElement.textContent = session.draw;
+    }
   }
 }
