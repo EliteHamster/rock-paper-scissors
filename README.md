@@ -206,9 +206,9 @@ $$V(m) = V_{pattern}(m) + V_{context}(m) + V_{freq}(m)$$
 
 Where:
 
-- **Pattern Component:** $V_{pattern}(m) = \sum_{k=2}^{5} (W_k \times C_{k}(m))$
-  - $W_5 = 100, W_4 = 80, W_3 = 60, W_2 = 40$ (Weights for 5, 4, 3, 2-move patterns)
-  - $C_k(m)$ = Number of times pattern of length $k$ predicted move $m$
+- **Pattern Component:** $V_{pattern}(m) = \sum_{k=2}^{5} (W_k \times C_{k}(m) \times R_t)$
+  - $W_k$: Base weights (100, 80, 60, 40)
+  - $R_t$: **Recency Multiplier** ($1.0$ to $3.0$). Recent patterns are weighted **3x** higher than old ones.
 - **Context Component:** $V_{context}(m) = 40 \times C_{ctx}(m)$
   - $C_{ctx}(m)$ = Times move $m$ was played after the current result (Win/Loss/Draw)
 - **Frequency Component:** $V_{freq}(m) = 15 \times P(m)$
