@@ -1,15 +1,15 @@
-const startBtn = document.getElementById('startBtn');
-const playerNameInput = document.getElementById('playerName');
-const gameArea = document.getElementById('gameArea');
-const choiceBtns = document.querySelectorAll('.choiceBtn');
-const gameStatus = document.getElementById('gameStatus');
-const sessionScore = document.getElementById('sessionBoard');
-const allTimeScore = document.getElementById('allTimeScore');
-const playerHeading = document.getElementById('playerHeading');
-const aiChoiceDisplay = document.getElementById('robotChoiceDisplay');
-const orbitCount = document.getElementById('rps-orbit-count');
-const playerNameDisplay = document.getElementById('playerNameDisplay');
-const robotChoiceBtn = document.getElementById('robotChoiceBtn');
+const startBtn = document.getElementById("startBtn");
+const playerNameInput = document.getElementById("playerName");
+const gameArea = document.getElementById("gameArea");
+const choiceBtns = document.querySelectorAll(".choiceBtn");
+const gameStatus = document.getElementById("gameStatus");
+const sessionScore = document.getElementById("sessionBoard");
+const allTimeScore = document.getElementById("allTimeScore");
+const playerHeading = document.getElementById("playerHeading");
+const aiChoiceDisplay = document.getElementById("robotChoiceDisplay");
+const orbitCount = document.getElementById("rps-orbit-count");
+const playerNameDisplay = document.getElementById("playerNameDisplay");
+const robotChoiceBtn = document.getElementById("robotChoiceBtn");
 
 let mode = "random";
 let humanName = "";
@@ -24,8 +24,8 @@ let session = {
   moveStats: {
     rock: { win: 0, loss: 0, draw: 0 },
     paper: { win: 0, loss: 0, draw: 0 },
-    scissors: { win: 0, loss: 0, draw: 0 }
-  }
+    scissors: { win: 0, loss: 0, draw: 0 },
+  },
 };
 let allTime = {
   human: 0,
@@ -36,13 +36,19 @@ let aiState = {
   lastHumanMove: null,
   lastResult: null,
   afterLossMap: {},
+  afterWinMap: {},
+  afterDrawMap: {},
   patterns: [],
+  patterns2: [], // 2-move sequences
+  patterns3: [], // 3-move sequences
+  patterns4: [], // 4-move sequences
+  patterns5: [], // 5-move sequences
 };
 let gameHistory = [];
 let sessionMeta = null; // Store session metadata for current game
 
-document.querySelectorAll('input[name="mode"]').forEach(el => {
-  el.addEventListener('change', () => {
+document.querySelectorAll('input[name="mode"]').forEach((el) => {
+  el.addEventListener("change", () => {
     mode = el.value;
   });
 });
@@ -60,7 +66,7 @@ startBtn.onclick = () => {
     w: null,
     l: null,
     d: null,
-    winner: ""
+    winner: "",
   };
   gameHistory.unshift(sessionMeta);
   if (gameHistory.length > 20) gameHistory.length = 20;
@@ -77,15 +83,21 @@ startBtn.onclick = () => {
     moveStats: {
       rock: { win: 0, loss: 0, draw: 0 },
       paper: { win: 0, loss: 0, draw: 0 },
-      scissors: { win: 0, loss: 0, draw: 0 }
-    }
+      scissors: { win: 0, loss: 0, draw: 0 },
+    },
   };
   aiState = {
     moveCounts: { rock: 0, paper: 0, scissors: 0 },
     lastHumanMove: null,
     lastResult: null,
     afterLossMap: {},
+    afterWinMap: {},
+    afterDrawMap: {},
     patterns: [],
+    patterns2: [],
+    patterns3: [],
+    patterns4: [],
+    patterns5: [],
   };
   updateScoreboard();
   renderHistoryTable();
@@ -95,7 +107,7 @@ startBtn.onclick = () => {
   aiChoiceDisplay.textContent = "";
 
   // Clear the AI decision box for new game
-  const decisionContent = document.querySelector('.decision-content');
+  const decisionContent = document.querySelector(".decision-content");
   if (decisionContent) {
     decisionContent.innerHTML = "";
   }
@@ -103,24 +115,26 @@ startBtn.onclick = () => {
   if (orbitCount) orbitCount.textContent = 100;
 
   // Re-enable choice buttons
-  choiceBtns.forEach(btn => btn.disabled = false);
+  choiceBtns.forEach((btn) => (btn.disabled = false));
 
   // Hide non-selected algorithm buttons during game
-  const algoSelector = document.querySelector('.algo-selector');
-  algoSelector.classList.add('game-active');
+  const algoSelector = document.querySelector(".algo-selector");
+  algoSelector.classList.add("game-active");
 
   // Mark the selected algorithm button
-  const allBtns = document.querySelectorAll('.algo-btn');
-  allBtns.forEach(btn => btn.classList.remove('selected'));
-  const selectedBtn = document.querySelector('.algo-btn input[type="radio"]:checked');
+  const allBtns = document.querySelectorAll(".algo-btn");
+  allBtns.forEach((btn) => btn.classList.remove("selected"));
+  const selectedBtn = document.querySelector(
+    '.algo-btn input[type="radio"]:checked'
+  );
   if (selectedBtn) {
-    selectedBtn.closest('.algo-btn').classList.add('selected');
+    selectedBtn.closest(".algo-btn").classList.add("selected");
   }
 
   renderPlayerPieChart();
 
   // Initialize robot button
-  const robotBtn = document.getElementById('robotChoiceBtn');
+  const robotBtn = document.getElementById("robotChoiceBtn");
   if (robotBtn) {
     robotBtn.innerHTML = `
       🤖 Thinking...
@@ -131,21 +145,22 @@ startBtn.onclick = () => {
   startRobotThinking();
 };
 
-choiceBtns.forEach(btn => {
+choiceBtns.forEach((btn) => {
   btn.onclick = () => {
     const humanMove = btn.dataset.choice;
     const computerMove = getComputerMove(humanMove);
-    
+
     // Stop robot thinking and show final choice
     stopRobotThinking(computerMove);
-    
+
     const result = getResult(humanMove, computerMove);
 
     // Update pattern learning (Learn After 30)
     if (mode === "learn30" && aiState.lastResult === "lose") {
       const prev = aiState.lastHumanMove;
       if (!aiState.afterLossMap[prev]) aiState.afterLossMap[prev] = {};
-      aiState.afterLossMap[prev][humanMove] = (aiState.afterLossMap[prev][humanMove] || 0) + 1;
+      aiState.afterLossMap[prev][humanMove] =
+        (aiState.afterLossMap[prev][humanMove] || 0) + 1;
     }
 
     // Update patterns (Pattern Matching)
@@ -154,7 +169,61 @@ choiceBtns.forEach(btn => {
       if (recent.length === 3) {
         aiState.patterns.push({
           seq: recent.join(","),
-          next: humanMove
+          next: humanMove,
+        });
+      }
+    }
+
+    // Update patterns and context (UberLogic)
+    if (mode === "uberlogic") {
+      // Track post-win/loss/draw behavior
+      if (aiState.lastResult === 'win') {
+        const prev = aiState.lastHumanMove;
+        if (!aiState.afterWinMap[prev]) aiState.afterWinMap[prev] = {};
+        aiState.afterWinMap[prev][humanMove] = (aiState.afterWinMap[prev][humanMove] || 0) + 1;
+      } else if (aiState.lastResult === 'lose') {
+        const prev = aiState.lastHumanMove;
+        if (!aiState.afterLossMap[prev]) aiState.afterLossMap[prev] = {};
+        aiState.afterLossMap[prev][humanMove] = (aiState.afterLossMap[prev][humanMove] || 0) + 1;
+      } else if (aiState.lastResult === 'draw') {
+        const prev = aiState.lastHumanMove;
+        if (!aiState.afterDrawMap[prev]) aiState.afterDrawMap[prev] = {};
+        aiState.afterDrawMap[prev][humanMove] = (aiState.afterDrawMap[prev][humanMove] || 0) + 1;
+      }
+
+      // Track 2-move patterns
+      if (session.moves.length >= 2) {
+        const recent = session.moves.slice(-2);
+        aiState.patterns2.push({
+          seq: recent.join(","),
+          next: humanMove,
+        });
+      }
+
+      // Track 3-move patterns
+      if (session.moves.length >= 3) {
+        const recent = session.moves.slice(-3);
+        aiState.patterns3.push({
+          seq: recent.join(","),
+          next: humanMove,
+        });
+      }
+
+      // Track 4-move patterns
+      if (session.moves.length >= 4) {
+        const recent = session.moves.slice(-4);
+        aiState.patterns4.push({
+          seq: recent.join(","),
+          next: humanMove,
+        });
+      }
+
+      // Track 5-move patterns
+      if (session.moves.length >= 5) {
+        const recent = session.moves.slice(-5);
+        aiState.patterns5.push({
+          seq: recent.join(","),
+          next: humanMove,
         });
       }
     }
@@ -167,13 +236,13 @@ choiceBtns.forEach(btn => {
     aiState.lastResult = result;
 
     // Score tracking
-    if (result === 'win') session.human++, allTime.human++;
-    if (result === 'lose') session.computer++, allTime.computer++;
+    if (result === "win") session.human++, allTime.human++;
+    if (result === "lose") session.computer++, allTime.computer++;
 
     // Update session W/L/D
-    if (result === 'win') session.win++;
-    if (result === 'lose') session.loss++;
-    if (result === 'draw') session.draw++;
+    if (result === "win") session.win++;
+    if (result === "lose") session.loss++;
+    if (result === "draw") session.draw++;
 
     // Update per-move stats
     if (result === "win") {
@@ -185,13 +254,13 @@ choiceBtns.forEach(btn => {
     }
 
     updateScoreboard();
-    
+
     // Update decision box with the result
     updateDecisionBox(computerMove, lastDecisionReason, result);
-    
+
     // Show dynamic result with animations
     showDynamicResult(result);
-    
+
     // Remove old static game status text
     // gameStatus.textContent = `${humanName} played ${humanMove} — Computer played ${computerMove}. You ${result}!`;
     aiChoiceDisplay.textContent = "";
@@ -210,20 +279,24 @@ choiceBtns.forEach(btn => {
       // gameStatus.textContent = "Game Complete! Click Start Game for another round.";
 
       // Show all algorithm buttons again
-      const algoSelector = document.querySelector('.algo-selector');
-      algoSelector.classList.remove('game-active');
+      const algoSelector = document.querySelector(".algo-selector");
+      algoSelector.classList.remove("game-active");
       // Remove selected class from all buttons
-      document.querySelectorAll('.algo-btn').forEach(btn => btn.classList.remove('selected'));
+      document
+        .querySelectorAll(".algo-btn")
+        .forEach((btn) => btn.classList.remove("selected"));
 
       // Stop robot thinking completely
       clearInterval(robotThinkingInterval);
       robotThinkingInterval = null; // Clear the reference
-      const robotBtn = document.getElementById('robotChoiceBtn');
+      const robotBtn = document.getElementById("robotChoiceBtn");
       if (robotBtn) {
-        robotBtn.classList.remove('robot-thinking');
+        robotBtn.classList.remove("robot-thinking");
         // Keep the final choice displayed without any animation
         // Force update the button to ensure it shows the final choice
-        const choiceData = robotChoices.find(c => c.name.toLowerCase() === computerMove);
+        const choiceData = robotChoices.find(
+          (c) => c.name.toLowerCase() === computerMove
+        );
         if (choiceData) {
           robotBtn.innerHTML = `
             ${choiceData.emoji} ${choiceData.name}
@@ -233,15 +306,15 @@ choiceBtns.forEach(btn => {
       }
 
       // Disable choice buttons
-      choiceBtns.forEach(btn => btn.disabled = true);
-      
+      choiceBtns.forEach((btn) => (btn.disabled = true));
+
       // Don't restart thinking animation since game is over
       return;
     }
 
     // Update pie chart
     renderPlayerPieChart();
-    
+
     // Start thinking again for next round (if game not over)
     if (session.games < 100) {
       setTimeout(startRobotThinking, 2000); // 2 second pause to see robot's choice
@@ -263,7 +336,8 @@ function capitalize(str) {
 let lastDecisionReason = ""; // Store the last decision reason
 
 function getComputerMove(humanMove) {
-  const randomMove = () => ["rock", "paper", "scissors"][Math.floor(Math.random() * 3)];
+  const randomMove = () =>
+    ["rock", "paper", "scissors"][Math.floor(Math.random() * 3)];
 
   if (mode === "random") {
     const move = randomMove();
@@ -279,7 +353,10 @@ function getComputerMove(humanMove) {
     }
 
     // 1. Learn player's overall tendencies
-    const totalMoves = Object.values(aiState.moveCounts).reduce((a, b) => a + b, 0);
+    const totalMoves = Object.values(aiState.moveCounts).reduce(
+      (a, b) => a + b,
+      0
+    );
     const probs = {
       rock: aiState.moveCounts.rock / totalMoves,
       paper: aiState.moveCounts.paper / totalMoves,
@@ -288,14 +365,18 @@ function getComputerMove(humanMove) {
 
     // 2. Predict what human will play next
     let predicted = Object.entries(probs).sort((a, b) => b[1] - a[1])[0][0];
-    let reason = `analysis shows you favor ${predicted} (${Math.round(probs[predicted] * 100)}%)`;
+    let reason = `analysis shows you favor ${predicted} (${Math.round(
+      probs[predicted] * 100
+    )}%)`;
 
     // 3. After loss: learn what human plays next
-    if (aiState.lastResult === 'lose') {
+    if (aiState.lastResult === "lose") {
       const prev = aiState.lastHumanMove;
       const nextMoveAfterLoss = aiState.afterLossMap[prev];
       if (nextMoveAfterLoss) {
-        const mostLikely = Object.entries(nextMoveAfterLoss).sort((a, b) => b[1] - a[1])[0];
+        const mostLikely = Object.entries(nextMoveAfterLoss).sort(
+          (a, b) => b[1] - a[1]
+        )[0];
         predicted = mostLikely[0];
         reason = `after losing, you typically play ${predicted} next (${mostLikely[1]} times)`;
       }
@@ -327,6 +408,140 @@ function getComputerMove(humanMove) {
     }
   }
 
+  if (mode === "uberlogic") {
+    // Turn 1: No data, play random
+    if (session.games === 0) {
+      const move = randomMove();
+      lastDecisionReason = "first turn, no data available (random)";
+      return move;
+    }
+
+    // Turn 2+: Use all available learning
+    const predictions = {}; // { move: { score: number, reasons: [] } }
+    predictions.rock = { score: 0, reasons: [] };
+    predictions.paper = { score: 0, reasons: [] };
+    predictions.scissors = { score: 0, reasons: [] };
+
+    // 1. Check for 5-move pattern (highest priority)
+    if (session.moves.length >= 5) {
+      const last5 = session.moves.slice(-5).join(",");
+      const matches = aiState.patterns5.filter(p => p.seq === last5);
+      if (matches.length > 0) {
+        const nextMoves = {};
+        matches.forEach(m => {
+          nextMoves[m.next] = (nextMoves[m.next] || 0) + 1;
+        });
+        const mostLikely = Object.entries(nextMoves).sort((a, b) => b[1] - a[1])[0];
+        predictions[mostLikely[0]].score += 50;
+        predictions[mostLikely[0]].reasons.push(`5-move pattern detected (${mostLikely[1]}x)`);
+      }
+    }
+
+    // 2. Check for 4-move pattern
+    if (session.moves.length >= 4) {
+      const last4 = session.moves.slice(-4).join(",");
+      const matches = aiState.patterns4.filter(p => p.seq === last4);
+      if (matches.length > 0) {
+        const nextMoves = {};
+        matches.forEach(m => {
+          nextMoves[m.next] = (nextMoves[m.next] || 0) + 1;
+        });
+        const mostLikely = Object.entries(nextMoves).sort((a, b) => b[1] - a[1])[0];
+        predictions[mostLikely[0]].score += 35;
+        predictions[mostLikely[0]].reasons.push(`4-move pattern detected (${mostLikely[1]}x)`);
+      }
+    }
+
+    // 3. Check for 3-move pattern
+    if (session.moves.length >= 3) {
+      const last3 = session.moves.slice(-3).join(",");
+      const matches = aiState.patterns3.filter(p => p.seq === last3);
+      if (matches.length > 0) {
+        const nextMoves = {};
+        matches.forEach(m => {
+          nextMoves[m.next] = (nextMoves[m.next] || 0) + 1;
+        });
+        const mostLikely = Object.entries(nextMoves).sort((a, b) => b[1] - a[1])[0];
+        predictions[mostLikely[0]].score += 25;
+        predictions[mostLikely[0]].reasons.push(`3-move pattern detected (${mostLikely[1]}x)`);
+      }
+    }
+
+    // 4. Check for 2-move pattern
+    if (session.moves.length >= 2) {
+      const last2 = session.moves.slice(-2).join(",");
+      const matches = aiState.patterns2.filter(p => p.seq === last2);
+      if (matches.length > 0) {
+        const nextMoves = {};
+        matches.forEach(m => {
+          nextMoves[m.next] = (nextMoves[m.next] || 0) + 1;
+        });
+        const mostLikely = Object.entries(nextMoves).sort((a, b) => b[1] - a[1])[0];
+        predictions[mostLikely[0]].score += 15;
+        predictions[mostLikely[0]].reasons.push(`2-move pattern detected (${mostLikely[1]}x)`);
+      }
+    }
+
+    // 5. Check contextual behavior (post-win/loss/draw)
+    if (aiState.lastResult === 'win') {
+      const afterWin = aiState.afterWinMap[aiState.lastHumanMove];
+      if (afterWin) {
+        const mostLikely = Object.entries(afterWin).sort((a, b) => b[1] - a[1])[0];
+        predictions[mostLikely[0]].score += 30;
+        predictions[mostLikely[0]].reasons.push(`after win pattern (${mostLikely[1]}x)`);
+      }
+    } else if (aiState.lastResult === 'lose') {
+      const afterLoss = aiState.afterLossMap[aiState.lastHumanMove];
+      if (afterLoss) {
+        const mostLikely = Object.entries(afterLoss).sort((a, b) => b[1] - a[1])[0];
+        predictions[mostLikely[0]].score += 30;
+        predictions[mostLikely[0]].reasons.push(`after loss pattern (${mostLikely[1]}x)`);
+      }
+    } else if (aiState.lastResult === 'draw') {
+      const afterDraw = aiState.afterDrawMap[aiState.lastHumanMove];
+      if (afterDraw) {
+        const mostLikely = Object.entries(afterDraw).sort((a, b) => b[1] - a[1])[0];
+        predictions[mostLikely[0]].score += 30;
+        predictions[mostLikely[0]].reasons.push(`after draw pattern (${mostLikely[1]}x)`);
+      }
+    }
+
+    // 6. Overall frequency (fallback/baseline)
+    const totalMoves = Object.values(aiState.moveCounts).reduce((a, b) => a + b, 0);
+    if (totalMoves > 0) {
+      const probs = {
+        rock: aiState.moveCounts.rock / totalMoves,
+        paper: aiState.moveCounts.paper / totalMoves,
+        scissors: aiState.moveCounts.scissors / totalMoves,
+      };
+      predictions.rock.score += probs.rock * 10;
+      predictions.paper.score += probs.paper * 10;
+      predictions.scissors.score += probs.scissors * 10;
+      
+      // Add frequency to reasons for the most common move
+      const mostCommon = Object.entries(probs).sort((a, b) => b[1] - a[1])[0];
+      predictions[mostCommon[0]].reasons.push(`overall frequency ${Math.round(mostCommon[1] * 100)}%`);
+    }
+
+    // Find the highest scoring prediction
+    const sortedPredictions = Object.entries(predictions).sort((a, b) => b[1].score - a[1].score);
+    const predicted = sortedPredictions[0][0];
+    const predictionData = sortedPredictions[0][1];
+
+    // Build reason string
+    if (predictionData.reasons.length > 0) {
+      lastDecisionReason = `predicted ${predicted} based on: ${predictionData.reasons.join(', ')}`;
+    } else {
+      // No patterns found, use random
+      const move = randomMove();
+      lastDecisionReason = "insufficient data, using random choice";
+      return move;
+    }
+
+    const move = counterMove(predicted);
+    return move;
+  }
+
   const move = randomMove();
   lastDecisionReason = "default random choice";
   return move;
@@ -339,43 +554,43 @@ function counterMove(move) {
 }
 
 function updateDecisionBox(robotMove, reason, gameResult = null) {
-  const decisionContent = document.querySelector('.decision-content');
+  const decisionContent = document.querySelector(".decision-content");
   if (decisionContent) {
     // Use session.games directly since it's already been incremented when this function is called
     const turnNumber = session.games;
     let message = `${turnNumber}. Robot chose ${robotMove} because ${reason}.`;
-    
+
     // Add result indicator if game result is provided
     if (gameResult) {
-      let resultClass = '';
-      let resultText = '';
-      
+      let resultClass = "";
+      let resultText = "";
+
       // Note: result is from human perspective, so flip for robot
-      if (gameResult === 'win') {
-        resultClass = 'result-loss'; // Human won, robot lost
-        resultText = 'L';
-      } else if (gameResult === 'lose') {
-        resultClass = 'result-win'; // Human lost, robot won
-        resultText = 'W';
-      } else if (gameResult === 'draw') {
-        resultClass = 'result-draw';
-        resultText = 'D';
+      if (gameResult === "win") {
+        resultClass = "result-loss"; // Human won, robot lost
+        resultText = "L";
+      } else if (gameResult === "lose") {
+        resultClass = "result-win"; // Human lost, robot won
+        resultText = "W";
+      } else if (gameResult === "draw") {
+        resultClass = "result-draw";
+        resultText = "D";
       }
-      
+
       message += ` <span class="result-indicator ${resultClass}">${resultText}</span>`;
     }
-    
+
     // Add the new message to the top, keep ALL previous messages for the current game
     const currentContent = decisionContent.innerHTML;
     if (currentContent.trim()) {
-      decisionContent.innerHTML = message + '<br><br>' + currentContent;
+      decisionContent.innerHTML = message + "<br><br>" + currentContent;
     } else {
       decisionContent.innerHTML = message;
     }
-    
+
     // No limit on messages - keep all turns for the current game
     // (Messages will be cleared when a new game starts)
-    
+
     // Scroll to top to show the latest message
     decisionContent.scrollTop = 0;
   }
@@ -387,51 +602,58 @@ function getResult(human, computer) {
     (human === "rock" && computer === "scissors") ||
     (human === "paper" && computer === "rock") ||
     (human === "scissors" && computer === "paper")
-  ) return "win";
+  )
+    return "win";
   return "lose";
 }
 
 function updateScoreboard() {
   // Player side
-  document.getElementById('sessionWin').textContent = session.win;
-  document.getElementById('sessionLoss').textContent = session.loss;
+  document.getElementById("sessionWin").textContent = session.win;
+  document.getElementById("sessionLoss").textContent = session.loss;
   // Draw center
-  document.getElementById('sessionDraw').textContent = session.draw;
+  document.getElementById("sessionDraw").textContent = session.draw;
   // Robot side (Robot's win = player's loss, Robot's loss = player's win)
-  document.getElementById('robotWin').textContent = session.loss;
-  document.getElementById('robotLoss').textContent = session.win;
+  document.getElementById("robotWin").textContent = session.loss;
+  document.getElementById("robotLoss").textContent = session.win;
 
   // Use session.win for player, session.loss for robot
   const playerWins = session.win;
   const robotWins = session.loss;
 
   // Update win circles
-  const playerWinCircle = document.getElementById('playerWinCircle');
-  const robotWinCircle = document.getElementById('robotWinCircle');
+  const playerWinCircle = document.getElementById("playerWinCircle");
+  const robotWinCircle = document.getElementById("robotWinCircle");
   if (playerWinCircle) playerWinCircle.textContent = playerWins;
   if (robotWinCircle) robotWinCircle.textContent = robotWins;
 
   // Set colors
-  playerWinCircle.classList.remove('green', 'red');
-  robotWinCircle.classList.remove('green', 'red');
+  playerWinCircle.classList.remove("green", "red");
+  robotWinCircle.classList.remove("green", "red");
   if (playerWins > robotWins) {
-    playerWinCircle.classList.add('green');
-    robotWinCircle.classList.add('red');
+    playerWinCircle.classList.add("green");
+    robotWinCircle.classList.add("red");
   } else if (robotWins > playerWins) {
-    playerWinCircle.classList.add('red');
-    robotWinCircle.classList.add('green');
+    playerWinCircle.classList.add("red");
+    robotWinCircle.classList.add("green");
   }
   // If tie, both remain grey
 
   // Per-move stats
-  document.getElementById('rockStats').textContent = `Wins: ${session.moveStats.rock.win}`;
-  document.getElementById('paperStats').textContent = `Wins: ${session.moveStats.paper.win}`;
-  document.getElementById('scissorsStats').textContent = `Wins: ${session.moveStats.scissors.win}`;
+  document.getElementById(
+    "rockStats"
+  ).textContent = `Wins: ${session.moveStats.rock.win}`;
+  document.getElementById(
+    "paperStats"
+  ).textContent = `Wins: ${session.moveStats.paper.win}`;
+  document.getElementById(
+    "scissorsStats"
+  ).textContent = `Wins: ${session.moveStats.scissors.win}`;
 
   // Update robot button stats if not currently thinking
-  const robotBtn = document.getElementById('robotChoiceBtn');
-  if (robotBtn && !robotBtn.classList.contains('robot-thinking')) {
-    const robotStatsSpan = robotBtn.querySelector('.robot-stats');
+  const robotBtn = document.getElementById("robotChoiceBtn");
+  if (robotBtn && !robotBtn.classList.contains("robot-thinking")) {
+    const robotStatsSpan = robotBtn.querySelector(".robot-stats");
     if (robotStatsSpan) {
       robotStatsSpan.textContent = `Wins: ${session.loss}`;
     }
@@ -440,17 +662,26 @@ function updateScoreboard() {
 
 function addGameToHistory() {
   // Find existing row instead of adding new one
-  const existingRow = gameHistory.find(game => 
-    game.player === humanName && game.model === modeLabel(mode) && 
-    game.w === null && game.l === null && game.d === null);
-  
+  const existingRow = gameHistory.find(
+    (game) =>
+      game.player === humanName &&
+      game.model === modeLabel(mode) &&
+      game.w === null &&
+      game.l === null &&
+      game.d === null
+  );
+
   if (existingRow) {
     // Update existing row
     existingRow.w = session.win;
     existingRow.l = session.loss;
     existingRow.d = session.draw;
-    existingRow.winner = session.win > session.loss ? humanName : 
-                         session.loss > session.win ? "Robot" : "Draw";
+    existingRow.winner =
+      session.win > session.loss
+        ? humanName
+        : session.loss > session.win
+        ? "Robot"
+        : "Draw";
   } else {
     // Fallback: add new row if somehow missing
     gameHistory.unshift({
@@ -459,8 +690,12 @@ function addGameToHistory() {
       w: session.win,
       l: session.loss,
       d: session.draw,
-      winner: session.win > session.loss ? humanName : 
-             session.loss > session.win ? "Robot" : "Draw"
+      winner:
+        session.win > session.loss
+          ? humanName
+          : session.loss > session.win
+          ? "Robot"
+          : "Draw",
     });
     if (gameHistory.length > 20) gameHistory.length = 20;
   }
@@ -470,6 +705,7 @@ function modeLabel(mode) {
   if (mode === "random") return "Random";
   if (mode === "learn30") return "Learn after 30";
   if (mode === "pattern50") return "Patterns";
+  if (mode === "uberlogic") return "UberLogic";
   return mode;
 }
 
@@ -500,12 +736,12 @@ function renderHistoryTable() {
 renderHistoryTable();
 
 // Animated Title Cartoon Logic
-const rockIcon = document.getElementById('rps-rock');
-const paperIcon = document.getElementById('rps-paper');
-const scissorsIcon = document.getElementById('rps-scissors');
-const rockWord = document.getElementById('rps-rock-word');
-const paperWord = document.getElementById('rps-paper-word');
-const scissorsWord = document.getElementById('rps-scissors-word');
+const rockIcon = document.getElementById("rps-rock");
+const paperIcon = document.getElementById("rps-paper");
+const scissorsIcon = document.getElementById("rps-scissors");
+const rockWord = document.getElementById("rps-rock-word");
+const paperWord = document.getElementById("rps-paper-word");
+const scissorsWord = document.getElementById("rps-scissors-word");
 
 // Helper for random timing
 function randomDelay(min, max) {
@@ -515,34 +751,34 @@ function randomDelay(min, max) {
 // --- Cartoon Actions ---
 
 function rockBounceSmush() {
-  rockIcon.classList.add('rock-bounce');
+  rockIcon.classList.add("rock-bounce");
   setTimeout(() => {
-    scissorsWord.classList.add('scissors-smush');
+    scissorsWord.classList.add("scissors-smush");
     setTimeout(() => {
-      rockIcon.classList.remove('rock-bounce');
-      scissorsWord.classList.remove('scissors-smush');
+      rockIcon.classList.remove("rock-bounce");
+      scissorsWord.classList.remove("scissors-smush");
     }, 1200);
   }, 600);
 }
 
 function paperCrawlCover() {
-  paperIcon.classList.add('paper-crawl');
+  paperIcon.classList.add("paper-crawl");
   setTimeout(() => {
-    rockWord.classList.add('rock-covered');
+    rockWord.classList.add("rock-covered");
     setTimeout(() => {
-      paperIcon.classList.remove('paper-crawl');
-      rockWord.classList.remove('rock-covered');
+      paperIcon.classList.remove("paper-crawl");
+      rockWord.classList.remove("rock-covered");
     }, 1500);
   }, 700);
 }
 
 function scissorsCutPeel() {
-  scissorsIcon.classList.add('scissors-cut');
+  scissorsIcon.classList.add("scissors-cut");
   setTimeout(() => {
-    paperWord.classList.add('paper-peel');
+    paperWord.classList.add("paper-peel");
     setTimeout(() => {
-      scissorsIcon.classList.remove('scissors-cut');
-      paperWord.classList.remove('paper-peel');
+      scissorsIcon.classList.remove("scissors-cut");
+      paperWord.classList.remove("paper-peel");
     }, 1200);
   }, 600);
 }
@@ -558,7 +794,7 @@ function runRandomCartoonAction() {
 setTimeout(runRandomCartoonAction, randomDelay(1000, 3000));
 
 // Autopilot Button Logic
-const autopilotBtn = document.getElementById('autopilotBtn');
+const autopilotBtn = document.getElementById("autopilotBtn");
 
 autopilotBtn.onclick = async function () {
   if (session.games >= 100) return;
@@ -569,14 +805,16 @@ autopilotBtn.onclick = async function () {
     const moves = ["rock", "paper", "scissors"];
     const randomMove = moves[Math.floor(Math.random() * 3)];
     // Simulate button click
-    const btn = document.querySelector(`.choiceBtn[data-choice="${randomMove}"]`);
+    const btn = document.querySelector(
+      `.choiceBtn[data-choice="${randomMove}"]`
+    );
     if (btn) btn.click();
-    await new Promise(res => setTimeout(res, delay));
+    await new Promise((res) => setTimeout(res, delay));
   }
   autopilotBtn.disabled = false;
 };
 
-const autoPatternsBtn = document.getElementById('autoPatternsBtn');
+const autoPatternsBtn = document.getElementById("autoPatternsBtn");
 
 autoPatternsBtn.onclick = async function () {
   if (session.games >= 100 || session.moves.length === 0) return;
@@ -589,19 +827,19 @@ autoPatternsBtn.onclick = async function () {
     const btn = document.querySelector(`.choiceBtn[data-choice="${move}"]`);
     if (btn) btn.click();
     i++;
-    await new Promise(res => setTimeout(res, delay));
+    await new Promise((res) => setTimeout(res, delay));
   }
   autoPatternsBtn.disabled = false;
 };
 
 // New Player Pie Chart Logic
 function renderPlayerPieChart() {
-  const pieDiv = document.getElementById('playerPieChart');
+  const pieDiv = document.getElementById("playerPieChart");
   if (!pieDiv) return;
 
   // Count moves
   const counts = { rock: 0, paper: 0, scissors: 0 };
-  session.moves.forEach(m => counts[m]++);
+  session.moves.forEach((m) => counts[m]++);
   const total = session.moves.length;
 
   // If no moves yet, show empty chart
@@ -621,107 +859,136 @@ function renderPlayerPieChart() {
   const scissorsAngle = (counts.scissors / total) * 360;
 
   let svg = `<svg width="192" height="192" viewBox="0 0 80 80">`;
-  
+
   // Background circle
   svg += `<circle r="40" cx="40" cy="40" fill="#eee"/>`;
-  
+
   let currentAngle = 0;
-  
+
   // Add rock slice if it exists
   if (rockAngle > 0) {
-    svg += `<path d="${describeArc(40,40,40,currentAngle,currentAngle+rockAngle)}" fill="#ffb74d"/>`;
-    
+    svg += `<path d="${describeArc(
+      40,
+      40,
+      40,
+      currentAngle,
+      currentAngle + rockAngle
+    )}" fill="#ffb74d"/>`;
+
     // Add rock emoji on the slice
     const midAngle = currentAngle + rockAngle / 2;
     const iconPos = polarToCartesian(40, 40, 25, midAngle); // 25 is radius from center to place icon
     svg += `<text x="${iconPos.x}" y="${iconPos.y}" text-anchor="middle" dominant-baseline="central" font-size="8">🪨</text>`;
-    
+
     currentAngle += rockAngle;
   }
-  
+
   // Add paper slice if it exists
   if (paperAngle > 0) {
-    svg += `<path d="${describeArc(40,40,40,currentAngle,currentAngle+paperAngle)}" fill="#64b5f6"/>`;
-    
+    svg += `<path d="${describeArc(
+      40,
+      40,
+      40,
+      currentAngle,
+      currentAngle + paperAngle
+    )}" fill="#64b5f6"/>`;
+
     // Add paper emoji on the slice
     const midAngle = currentAngle + paperAngle / 2;
     const iconPos = polarToCartesian(40, 40, 25, midAngle);
     svg += `<text x="${iconPos.x}" y="${iconPos.y}" text-anchor="middle" dominant-baseline="central" font-size="8">📄</text>`;
-    
+
     currentAngle += paperAngle;
   }
-  
+
   // Add scissors slice if it exists
   if (scissorsAngle > 0) {
-    svg += `<path d="${describeArc(40,40,40,currentAngle,currentAngle+scissorsAngle)}" fill="#e57373"/>`;
-    
+    svg += `<path d="${describeArc(
+      40,
+      40,
+      40,
+      currentAngle,
+      currentAngle + scissorsAngle
+    )}" fill="#e57373"/>`;
+
     // Add scissors emoji on the slice
     const midAngle = currentAngle + scissorsAngle / 2;
     const iconPos = polarToCartesian(40, 40, 25, midAngle);
     svg += `<text x="${iconPos.x}" y="${iconPos.y}" text-anchor="middle" dominant-baseline="central" font-size="8">✂️</text>`;
   }
-  
+
   svg += `</svg>`;
   pieDiv.innerHTML = svg;
 }
 
 // Helper to describe SVG arc
-function describeArc(cx, cy, r, startAngle, endAngle){
+function describeArc(cx, cy, r, startAngle, endAngle) {
   const start = polarToCartesian(cx, cy, r, endAngle);
   const end = polarToCartesian(cx, cy, r, startAngle);
   const largeArcFlag = endAngle - startAngle <= 180 ? "0" : "1";
   return [
-    "M", cx, cy,
-    "L", start.x, start.y,
-    "A", r, r, 0, largeArcFlag, 0, end.x, end.y,
-    "Z"
+    "M",
+    cx,
+    cy,
+    "L",
+    start.x,
+    start.y,
+    "A",
+    r,
+    r,
+    0,
+    largeArcFlag,
+    0,
+    end.x,
+    end.y,
+    "Z",
   ].join(" ");
 }
-function polarToCartesian(cx, cy, r, angle){
-  const rad = (angle-90) * Math.PI / 180.0;
+function polarToCartesian(cx, cy, r, angle) {
+  const rad = ((angle - 90) * Math.PI) / 180.0;
   return {
-    x: cx + (r * Math.cos(rad)),
-    y: cy + (r * Math.sin(rad))
+    x: cx + r * Math.cos(rad),
+    y: cy + r * Math.sin(rad),
   };
 }
 
 // Robot thinking animation functions
 let robotThinkingInterval;
 const robotChoices = [
-  { emoji: '🪨', name: 'Rock' },
-  { emoji: '📄', name: 'Paper' },
-  { emoji: '✂️', name: 'Scissors' }
+  { emoji: "🪨", name: "Rock" },
+  { emoji: "📄", name: "Paper" },
+  { emoji: "✂️", name: "Scissors" },
 ];
 
 function startRobotThinking() {
   // Don't start thinking if game is over
   if (session.games >= 100) {
-    console.log('Game is over, not starting robot thinking');
+    console.log("Game is over, not starting robot thinking");
     return;
   }
-  
-  const robotBtn = document.getElementById('robotChoiceBtn');
+
+  const robotBtn = document.getElementById("robotChoiceBtn");
   if (!robotBtn) {
-    console.log('Robot button not found');
+    console.log("Robot button not found");
     return;
   }
-  
+
   // Clear any existing interval first
   if (robotThinkingInterval) {
     clearInterval(robotThinkingInterval);
   }
-  
-  console.log('Starting robot thinking animation');
-  robotBtn.classList.add('robot-thinking');
+
+  console.log("Starting robot thinking animation");
+  robotBtn.classList.add("robot-thinking");
   robotThinkingInterval = setInterval(() => {
     // Double check that game isn't over
     if (session.games >= 100) {
       clearInterval(robotThinkingInterval);
       robotThinkingInterval = null;
-      robotBtn.classList.remove('robot-thinking');
+      robotBtn.classList.remove("robot-thinking");
       return;
     }
-    
+
     const randomChoice = robotChoices[Math.floor(Math.random() * 3)];
     robotBtn.innerHTML = `
       ${randomChoice.emoji} ${randomChoice.name}
@@ -731,19 +998,21 @@ function startRobotThinking() {
 }
 
 function stopRobotThinking(finalChoice) {
-  const robotBtn = document.getElementById('robotChoiceBtn');
+  const robotBtn = document.getElementById("robotChoiceBtn");
   if (!robotBtn) {
     return;
   }
-  
+
   // Force clear the interval
   if (robotThinkingInterval) {
     clearInterval(robotThinkingInterval);
     robotThinkingInterval = null;
   }
-  robotBtn.classList.remove('robot-thinking');
-  
-  const choiceData = robotChoices.find(c => c.name.toLowerCase() === finalChoice);
+  robotBtn.classList.remove("robot-thinking");
+
+  const choiceData = robotChoices.find(
+    (c) => c.name.toLowerCase() === finalChoice
+  );
   if (choiceData) {
     robotBtn.innerHTML = `
       ${choiceData.emoji} ${choiceData.name}
@@ -757,68 +1026,68 @@ let currentResultAnimation = null;
 let isAnimationActive = false;
 
 function showDynamicResult(result) {
-  const dynamicResult = document.getElementById('dynamicResult');
-  const drawCounter = document.getElementById('drawCounter');
-  
+  const dynamicResult = document.getElementById("dynamicResult");
+  const drawCounter = document.getElementById("drawCounter");
+
   if (!dynamicResult) return;
-  
+
   // If animation is already running, speed it up and interrupt
   if (isAnimationActive && currentResultAnimation) {
     interruptCurrentAnimation();
   }
-  
+
   isAnimationActive = true;
-  
+
   // Clear any existing animations
-  dynamicResult.className = 'dynamic-result';
-  dynamicResult.innerHTML = '';
-  
+  dynamicResult.className = "dynamic-result";
+  dynamicResult.innerHTML = "";
+
   // Set the text and style based on result
-  let resultText = '';
-  let resultClass = '';
-  
-  if (result === 'win') {
-    resultText = 'You Win!';
-    resultClass = 'win';
-  } else if (result === 'lose') {
-    resultText = 'You Lose!';
-    resultClass = 'lose';
-  } else if (result === 'draw') {
+  let resultText = "";
+  let resultClass = "";
+
+  if (result === "win") {
+    resultText = "You Win!";
+    resultClass = "win";
+  } else if (result === "lose") {
+    resultText = "You Lose!";
+    resultClass = "lose";
+  } else if (result === "draw") {
     resultText = "It's a Draw!";
-    resultClass = 'draw';
+    resultClass = "draw";
   }
-  
+
   dynamicResult.textContent = resultText;
-  
+
   // Fade in with pulse animation
   const showTimeout = setTimeout(() => {
-    dynamicResult.classList.add('show', resultClass);
+    dynamicResult.classList.add("show", resultClass);
   }, 100);
-  
+
   // Create particle effects after shorter delay for rapid play
   const particleTimeout = setTimeout(() => {
     createParticleEffect(result, dynamicResult);
   }, 1000); // Reduced from 2000ms to 1000ms
-  
+
   // Store timeouts for potential interruption
   currentResultAnimation = {
     showTimeout,
     particleTimeout,
     result,
-    startTime: Date.now()
+    startTime: Date.now(),
   };
 }
 
 function interruptCurrentAnimation() {
   if (!currentResultAnimation) return;
-  
+
   // Clear existing timeouts
   clearTimeout(currentResultAnimation.showTimeout);
   clearTimeout(currentResultAnimation.particleTimeout);
-  
-  const dynamicResult = document.getElementById('dynamicResult');
+
+  const dynamicResult = document.getElementById("dynamicResult");
   const elapsed = Date.now() - currentResultAnimation.startTime;
-  
+
   // If animation just started, fast-forward to particle stage
   if (elapsed < 500) {
     // Skip to particle effect immediately
@@ -836,9 +1105,9 @@ function interruptCurrentAnimation() {
 
 function speedUpCurrentParticles() {
   // Find all current particles and speed them up
-  const particles = document.querySelectorAll('.particle');
-  particles.forEach(particle => {
-    particle.style.transition = 'all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+  const particles = document.querySelectorAll(".particle");
+  particles.forEach((particle) => {
+    particle.style.transition = "all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)";
   });
 }
 
@@ -847,34 +1116,34 @@ function createParticleEffect(result, sourceElement) {
   const particleCount = 8; // Reduced from 12 for faster completion
   let targetElement;
   let targetRect;
-  
+
   // Determine target based on result
-  if (result === 'win') {
-    targetElement = document.getElementById('playerWinCircle');
-  } else if (result === 'lose') {
-    targetElement = document.getElementById('robotWinCircle');
-  } else if (result === 'draw') {
-    targetElement = document.getElementById('drawCounter');
+  if (result === "win") {
+    targetElement = document.getElementById("playerWinCircle");
+  } else if (result === "lose") {
+    targetElement = document.getElementById("robotWinCircle");
+  } else if (result === "draw") {
+    targetElement = document.getElementById("drawCounter");
     // Show draw counter
-    targetElement.classList.add('show');
+    targetElement.classList.add("show");
   }
-  
+
   if (!targetElement) return;
   targetRect = targetElement.getBoundingClientRect();
-  
+
   // Create particles
   for (let i = 0; i < particleCount; i++) {
     createParticle(sourceRect, targetRect, result, i);
   }
-  
+
   // Hide the source text with disintegration effect
-  sourceElement.style.animation = 'disintegrate 0.6s ease forwards'; // Faster disintegration
-  
+  sourceElement.style.animation = "disintegrate 0.6s ease forwards"; // Faster disintegration
+
   // After particles arrive, update counter and pulse
   setTimeout(() => {
     updateScoreCounter(result);
-    sourceElement.classList.remove('show');
-    sourceElement.style.animation = '';
+    sourceElement.classList.remove("show");
+    sourceElement.style.animation = "";
     finishAnimation();
   }, 800); // Reduced from 1200ms
 }
@@ -885,42 +1154,44 @@ function finishAnimation() {
 }
 
 function createParticle(sourceRect, targetRect, result, index) {
-  const particle = document.createElement('div');
+  const particle = document.createElement("div");
   particle.className = `particle ${result}`;
-  
+
   // Set particle content based on result
-  if (result === 'win') {
-    particle.textContent = '🎉';
-  } else if (result === 'lose') {
-    particle.textContent = '💥';
-  } else if (result === 'draw') {
-    particle.textContent = '⚖️';
+  if (result === "win") {
+    particle.textContent = "🎉";
+  } else if (result === "lose") {
+    particle.textContent = "💥";
+  } else if (result === "draw") {
+    particle.textContent = "⚖️";
   }
-  
+
   // Random starting position around source
-  const startX = sourceRect.left + sourceRect.width / 2 + (Math.random() - 0.5) * 100;
-  const startY = sourceRect.top + sourceRect.height / 2 + (Math.random() - 0.5) * 50;
-  
+  const startX =
+    sourceRect.left + sourceRect.width / 2 + (Math.random() - 0.5) * 100;
+  const startY =
+    sourceRect.top + sourceRect.height / 2 + (Math.random() - 0.5) * 50;
+
   // Target position
   const endX = targetRect.left + targetRect.width / 2;
   const endY = targetRect.top + targetRect.height / 2;
-  
-  particle.style.position = 'fixed';
-  particle.style.left = startX + 'px';
-  particle.style.top = startY + 'px';
-  particle.style.zIndex = '1000';
-  particle.style.pointerEvents = 'none';
-  
+
+  particle.style.position = "fixed";
+  particle.style.left = startX + "px";
+  particle.style.top = startY + "px";
+  particle.style.zIndex = "1000";
+  particle.style.pointerEvents = "none";
+
   document.body.appendChild(particle);
-  
+
   // Animate to target with slight delay for each particle (reduced delay)
   setTimeout(() => {
-    particle.style.transition = 'all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94)'; // Faster transition
-    particle.style.left = endX + 'px';
-    particle.style.top = endY + 'px';
-    particle.style.transform = 'scale(0.2)';
-    particle.style.opacity = '0';
-    
+    particle.style.transition = "all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94)"; // Faster transition
+    particle.style.left = endX + "px";
+    particle.style.top = endY + "px";
+    particle.style.transform = "scale(0.2)";
+    particle.style.opacity = "0";
+
     // Remove particle after animation
     setTimeout(() => {
       if (particle.parentNode) {
@@ -932,24 +1203,24 @@ function createParticle(sourceRect, targetRect, result, index) {
 
 function updateScoreCounter(result) {
   let targetElement;
-  
-  if (result === 'win') {
-    targetElement = document.getElementById('playerWinCircle');
-  } else if (result === 'lose') {
-    targetElement = document.getElementById('robotWinCircle');
-  } else if (result === 'draw') {
-    targetElement = document.getElementById('drawCounter');
+
+  if (result === "win") {
+    targetElement = document.getElementById("playerWinCircle");
+  } else if (result === "lose") {
+    targetElement = document.getElementById("robotWinCircle");
+  } else if (result === "draw") {
+    targetElement = document.getElementById("drawCounter");
   }
-  
+
   if (targetElement) {
     // Pulse animation
-    targetElement.classList.add('pulse');
+    targetElement.classList.add("pulse");
     setTimeout(() => {
-      targetElement.classList.remove('pulse');
+      targetElement.classList.remove("pulse");
     }, 600);
-    
+
     // Update draw counter specifically
-    if (result === 'draw') {
+    if (result === "draw") {
       targetElement.textContent = session.draw;
     }
   }

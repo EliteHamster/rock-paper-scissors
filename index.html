@@ -1,143 +1,172 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Rock Paper Scissors AI</title>
-  <link rel="stylesheet" href="style.css">
-</head>
-<body>
-
-  <div class="rps-orbit-title-flex">
-    <img src="img/Logo.png" alt="Logo" class="orbit-logo">
-    <div class="rps-orbit-title">
-      <div class="rps-orbit-circle">
-        <div class="rps-orbit-center">
-          <div class="rps-orbit-100 tooltip-hover" id="rps-orbit-count" data-tooltip="You have 100 games to see who wins the most between you and the robot. You can select the robot's approach from the options below.">100</div>
-        </div>
-        <span class="rps-orbit-icon rock" id="orbit-rock">🪨</span>
-        <span class="rps-orbit-icon paper" id="orbit-paper">📄</span>
-        <span class="rps-orbit-icon scissors" id="orbit-scissors">✂️</span>
-      </div>
-    </div>
-  </div>
-
-  <!-- <h1>Rock Paper Scissors (100 Game AI)</h1> -->
-
-  <div style="margin-bottom: 32px;">
-    <label for="playerName">Enter your name: </label>
-    <input type="text" id="playerName" placeholder="Your Name">
-    <button id="startBtn" type="button">Start Game</button>
-  </div>
-
-  <div class="algo-selector">
-    <label class="algo-btn tooltip-hover-green" data-tooltip="The robot will make completely random choices on every turn.">
-      <input type="radio" name="mode" value="random" checked>
-      <span>Random Choice</span>
-    </label>
-    <label class="algo-btn tooltip-hover-green" data-tooltip="The robot will randomly choose for 30 turns, whilst watching you and learning. After 30 turns, it will start using what it has learned against you.">
-      <input type="radio" name="mode" value="learn30">
-      <span>Learn After 30</span>
-    </label>
-    <label class="algo-btn tooltip-hover-green" data-tooltip="The robot will watch any patterns you use for 30 turns, and then start countering them.">
-      <input type="radio" name="mode" value="pattern50">
-      <span>Pattern Matching</span>
-    </label>
-  </div>
-
-  <div id="gameArea" style="display: none;">
-    <h2 id="gameStatus"></h2>
-    <div id="sessionBoard" class="session-board">
-      <div class="score-side">
-        <div>Win: <span id="sessionWin">0</span></div>
-        <div>Loss: <span id="sessionLoss">0</span></div>
-      </div>
-      <div class="score-center">
-        <div>Draw: <span id="sessionDraw">0</span></div>
-      </div>
-      <div class="score-side">
-        <div>Win: <span id="robotWin">0</span></div>
-        <div>Loss: <span id="robotLoss">0</span></div>
-      </div>
-    </div>
-    
-    <!-- Dynamic Result Display Area -->
-    <div class="result-display-area">
-      <div id="drawCounter" class="draw-counter">0</div>
-      <div id="dynamicResult" class="dynamic-result"></div>
-    </div>
-    
-    <div class="game-flex">
-      <div class="pie-chart-container">
-        <div id="playerPieChart" class="pie-chart"></div>
-      </div>
-      <div class="player-section">
-        <h3 id="playerHeading">
-          <span id="playerNameDisplay"></span>
-          <span id="playerWinCircle" class="win-circle">0</span>
-          <button id="autopilotBtn" class="autopilot-btn" type="button">Autopilot</button>
-          <button id="autoPatternsBtn" class="autopatterns-btn" type="button">Auto-Patterns</button>
-        </h3>
-        <div class="choices">
-          <button class="choiceBtn" data-choice="rock">
-            🪨 Rock
-            <span class="btn-stats" id="rockStats">Wins: 0</span>
-          </button>
-          <button class="choiceBtn" data-choice="paper">
-            📄 Paper
-            <span class="btn-stats" id="paperStats">Wins: 0</span>
-          </button>
-
-          <button class="choiceBtn" data-choice="scissors">
-            ✂️ Scissors
-            <span class="btn-stats" id="scissorsStats">Wins: 0</span>
-          </button>
-        </div>
-      </div>
-      <div class="divider"></div>
-      <div class="ai-section">
-        <h3>
-          Robot
-          <span id="robotWinCircle" class="win-circle">0</span>
-        </h3>
-        <div class="robot-area">
-          <div class="choices">
-            <button id="robotChoiceBtn" class="choiceBtn robot-choice" disabled>
-              🤖 Thinking...
-              <span class="btn-stats robot-stats">W-0/L-0/D-0</span>
-            </button>
-          </div>
-          <div id="robotDecisionBox" class="robot-decision-box">
-            <div class="decision-content">
-              <!-- Robot decision-making info will go here -->
+  <head>
+    <meta charset="UTF-8" />
+    <title>Rock Paper Scissors AI</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="rps-orbit-title-flex">
+      <img src="img/Logo.png" alt="Logo" class="orbit-logo" />
+      <div class="rps-orbit-title">
+        <div class="rps-orbit-circle">
+          <div class="rps-orbit-center">
+            <div
+              class="rps-orbit-100 tooltip-hover"
+              id="rps-orbit-count"
+              data-tooltip="You have 100 games to see who wins the most between you and the robot. You can select the robot's approach from the options below."
+            >
+              100
             </div>
           </div>
+          <span class="rps-orbit-icon rock" id="orbit-rock">🪨</span>
+          <span class="rps-orbit-icon paper" id="orbit-paper">📄</span>
+          <span class="rps-orbit-icon scissors" id="orbit-scissors">✂️</span>
         </div>
-        <div id="robotChoiceDisplay"></div>
       </div>
     </div>
-  </div>
 
-  <hr style="margin: 32px 0 16px 0;">
+    <!-- <h1>Rock Paper Scissors (100 Game AI)</h1> -->
 
-  <div>
-    <h2>Last 20 Games</h2>
-    <table id="historyTable" class="history-table">
-      <thead>
-        <tr>
-          <th>Player Name</th>
-          <th>Model</th>
-          <th>Wins</th>
-          <th>Losses</th>
-          <th>Draws</th>
-          <th>Winner</th>
-        </tr>
-      </thead>
-      <tbody>
-        <!-- rows rendered by JS -->
-      </tbody>
-    </table>
-  </div>
+    <div style="margin-bottom: 32px">
+      <label for="playerName">Enter your name: </label>
+      <input type="text" id="playerName" placeholder="Your Name" />
+      <button id="startBtn" type="button">Start Game</button>
+    </div>
 
-  <script src="script.js"></script>
-</body>
+    <div class="algo-selector">
+      <label
+        class="algo-btn tooltip-hover-green"
+        data-tooltip="The robot will make completely random choices on every turn."
+      >
+        <input type="radio" name="mode" value="random" checked />
+        <span>Random Choice</span>
+      </label>
+      <label
+        class="algo-btn tooltip-hover-green"
+        data-tooltip="The robot will randomly choose for 30 turns, whilst watching you and learning. After 30 turns, it will start using what it has learned against you."
+      >
+        <input type="radio" name="mode" value="learn30" />
+        <span>Learn After 30</span>
+      </label>
+      <label
+        class="algo-btn tooltip-hover-green"
+        data-tooltip="The robot will watch any patterns you use for 30 turns, and then start countering them."
+      >
+        <input type="radio" name="mode" value="pattern50" />
+        <span>Pattern Matching</span>
+      </label>
+      <label
+        class="algo-btn tooltip-hover-green"
+        data-tooltip="Advanced AI that learns from turn 2 onwards. Tracks 2-5 move patterns, post-win/loss/draw behavior, and overall frequency. Combines all strategies with weighted scoring for maximum effectiveness."
+      >
+        <input type="radio" name="mode" value="uberlogic" />
+        <span>UberLogic 🧠</span>
+      </label>
+    </div>
+
+    <div id="gameArea" style="display: none">
+      <h2 id="gameStatus"></h2>
+      <div id="sessionBoard" class="session-board">
+        <div class="score-side">
+          <div>Win: <span id="sessionWin">0</span></div>
+          <div>Loss: <span id="sessionLoss">0</span></div>
+        </div>
+        <div class="score-center">
+          <div>Draw: <span id="sessionDraw">0</span></div>
+        </div>
+        <div class="score-side">
+          <div>Win: <span id="robotWin">0</span></div>
+          <div>Loss: <span id="robotLoss">0</span></div>
+        </div>
+      </div>
+
+      <!-- Dynamic Result Display Area -->
+      <div class="result-display-area">
+        <div id="drawCounter" class="draw-counter">0</div>
+        <div id="dynamicResult" class="dynamic-result"></div>
+      </div>
+
+      <div class="game-flex">
+        <div class="pie-chart-container">
+          <div id="playerPieChart" class="pie-chart"></div>
+        </div>
+        <div class="player-section">
+          <h3 id="playerHeading">
+            <span id="playerNameDisplay"></span>
+            <span id="playerWinCircle" class="win-circle">0</span>
+            <button id="autopilotBtn" class="autopilot-btn" type="button">
+              Autopilot
+            </button>
+            <button id="autoPatternsBtn" class="autopatterns-btn" type="button">
+              Auto-Patterns
+            </button>
+          </h3>
+          <div class="choices">
+            <button class="choiceBtn" data-choice="rock">
+              🪨 Rock
+              <span class="btn-stats" id="rockStats">Wins: 0</span>
+            </button>
+            <button class="choiceBtn" data-choice="paper">
+              📄 Paper
+              <span class="btn-stats" id="paperStats">Wins: 0</span>
+            </button>
+
+            <button class="choiceBtn" data-choice="scissors">
+              ✂️ Scissors
+              <span class="btn-stats" id="scissorsStats">Wins: 0</span>
+            </button>
+          </div>
+        </div>
+        <div class="divider"></div>
+        <div class="ai-section">
+          <h3>
+            Robot
+            <span id="robotWinCircle" class="win-circle">0</span>
+          </h3>
+          <div class="robot-area">
+            <div class="choices">
+              <button
+                id="robotChoiceBtn"
+                class="choiceBtn robot-choice"
+                disabled
+              >
+                🤖 Thinking...
+                <span class="btn-stats robot-stats">W-0/L-0/D-0</span>
+              </button>
+            </div>
+            <div id="robotDecisionBox" class="robot-decision-box">
+              <div class="decision-content">
+                <!-- Robot decision-making info will go here -->
+              </div>
+            </div>
+          </div>
+          <div id="robotChoiceDisplay"></div>
+        </div>
+      </div>
+    </div>
+
+    <hr style="margin: 32px 0 16px 0" />
+
+    <div>
+      <h2>Last 20 Games</h2>
+      <table id="historyTable" class="history-table">
+        <thead>
+          <tr>
+            <th>Player Name</th>
+            <th>Model</th>
+            <th>Wins</th>
+            <th>Losses</th>
+            <th>Draws</th>
+            <th>Winner</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- rows rendered by JS -->
+        </tbody>
+      </table>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
 </html>
