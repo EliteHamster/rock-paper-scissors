@@ -28,20 +28,23 @@
 
     <!-- <h1>Rock Paper Scissors (100 Game AI)</h1> -->
 
-    <div style="margin-bottom: 32px">
-      <label for="playerName">Enter your name: </label>
-      <input type="text" id="playerName" placeholder="Your Name" />
-      <button id="startBtn" type="button">Start Game</button>
+    <div class="game-setup">
+      <div class="input-group">
+        <label for="playerName">Enter your name: </label>
+        <input type="text" id="playerName" placeholder="Your Name" />
+        <button id="startBtn" type="button">Start Game</button>
+      </div>
+      
+      <div class="strategy-select">
+        <label for="algoSelect" style="display:block; margin: 10px 0 5px; color: #aaa; font-size: 0.9em;">AI Strategy:</label>
+        <select id="algoSelect" class="setup-dropdown">
+          <option value="random">Random Choice</option>
+          <option value="learn30">Learn After 30 (Frequency)</option>
+          <option value="pattern50">Pattern Matching (Delayed)</option>
+          <option value="uberlogic" selected>UberLogic 🧠 (Adaptive AI)</option>
+        </select>
+      </div>
     </div>
-
-    <div class="algo-selector">
-    <select id="algoSelect" class="glass-panel" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.3); color: white; font-family: 'Inter', sans-serif; cursor: pointer;">
-      <option value="random">Random Choice</option>
-      <option value="learn30">Learn After 30 (Frequency)</option>
-      <option value="pattern50">Pattern Matching (Delayed)</option>
-      <option value="uberlogic" selected>UberLogic 🧠 (Adaptive AI)</option>
-    </select>
-  </div>
 
     <div id="gameArea" style="display: none">
       <h2 id="gameStatus"></h2>
