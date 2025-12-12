@@ -56,7 +56,11 @@ document.querySelectorAll('input[name="mode"]').forEach((el) => {
 startBtn.onclick = () => {
   humanName = playerNameInput.value.trim();
   if (!humanName) return alert("Enter your name.");
-  mode = document.querySelector('input[name="mode"]:checked').value;
+
+  // Gets value from dropdown instead of radio
+  const algoSelect = document.getElementById("algoSelect");
+  mode = algoSelect.value;
+
   gameArea.style.display = "block";
 
   // Start a new session meta and add a new row to history
@@ -86,6 +90,8 @@ startBtn.onclick = () => {
       scissors: { win: 0, loss: 0, draw: 0 },
     },
   };
+  
+  // RESET AI STATE (Explicitly ensuring all new fields are clear)
   aiState = {
     moveCounts: { rock: 0, paper: 0, scissors: 0 },
     lastHumanMove: null,
@@ -99,10 +105,10 @@ startBtn.onclick = () => {
     patterns4: [],
     patterns5: [],
   };
+
   updateScoreboard();
   renderHistoryTable();
-  // Remove old game status text - replaced with dynamic result display
-  // gameStatus.textContent = "Game Started!";
+  
   playerNameDisplay.textContent = humanName;
   aiChoiceDisplay.textContent = "";
 
@@ -119,17 +125,7 @@ startBtn.onclick = () => {
 
   // Hide non-selected algorithm buttons during game
   const algoSelector = document.querySelector(".algo-selector");
-  algoSelector.classList.add("game-active");
-
-  // Mark the selected algorithm button
-  const allBtns = document.querySelectorAll(".algo-btn");
-  allBtns.forEach((btn) => btn.classList.remove("selected"));
-  const selectedBtn = document.querySelector(
-    '.algo-btn input[type="radio"]:checked'
-  );
-  if (selectedBtn) {
-    selectedBtn.closest(".algo-btn").classList.add("selected");
-  }
+  if (algoSelector) algoSelector.classList.add("game-active");
 
   renderPlayerPieChart();
 
@@ -145,268 +141,7 @@ startBtn.onclick = () => {
   startRobotThinking();
 };
 
-choiceBtns.forEach((btn) => {
-  btn.onclick = () => {
-    const humanMove = btn.dataset.choice;
-    const computerMove = getComputerMove(humanMove);
 
-    // Stop robot thinking and show final choice
-    stopRobotThinking(computerMove);
-
-    const result = getResult(humanMove, computerMove);
-
-    // Update pattern learning (Learn After 30)
-    if (mode === "learn30" && aiState.lastResult === "lose") {
-      const prev = aiState.lastHumanMove;
-      if (!aiState.afterLossMap[prev]) aiState.afterLossMap[prev] = {};
-      aiState.afterLossMap[prev][humanMove] =
-        (aiState.afterLossMap[prev][humanMove] || 0) + 1;
-    }
-
-    // Update patterns (Pattern Matching)
-    if (mode === "pattern50") {
-      const recent = session.moves.slice(-3);
-      if (recent.length === 3) {
-        aiState.patterns.push({
-          seq: recent.join(","),
-          next: humanMove,
-        });
-      }
-    }
-
-    // Update patterns and context (UberLogic)
-    if (mode === "uberlogic") {
-      // Track post-win/loss/draw behavior
-      if (aiState.lastResult === 'win') {
-        const prev = aiState.lastHumanMove;
-        if (!aiState.afterWinMap[prev]) aiState.afterWinMap[prev] = {};
-        aiState.afterWinMap[prev][humanMove] = (aiState.afterWinMap[prev][humanMove] || 0) + 1;
-      } else if (aiState.lastResult === 'lose') {
-        const prev = aiState.lastHumanMove;
-        if (!aiState.afterLossMap[prev]) aiState.afterLossMap[prev] = {};
-        aiState.afterLossMap[prev][humanMove] = (aiState.afterLossMap[prev][humanMove] || 0) + 1;
-      } else if (aiState.lastResult === 'draw') {
-        const prev = aiState.lastHumanMove;
-        if (!aiState.afterDrawMap[prev]) aiState.afterDrawMap[prev] = {};
-        aiState.afterDrawMap[prev][humanMove] = (aiState.afterDrawMap[prev][humanMove] || 0) + 1;
-      }
-
-      // Track 2-move patterns
-      if (session.moves.length >= 2) {
-        const recent = session.moves.slice(-2);
-        aiState.patterns2.push({
-          seq: recent.join(","),
-          next: humanMove,
-        });
-      }
-
-      // Track 3-move patterns
-      if (session.moves.length >= 3) {
-        const recent = session.moves.slice(-3);
-        aiState.patterns3.push({
-          seq: recent.join(","),
-          next: humanMove,
-        });
-      }
-
-      // Track 4-move patterns
-      if (session.moves.length >= 4) {
-        const recent = session.moves.slice(-4);
-        aiState.patterns4.push({
-          seq: recent.join(","),
-          next: humanMove,
-        });
-      }
-
-      // Track 5-move patterns
-      if (session.moves.length >= 5) {
-        const recent = session.moves.slice(-5);
-        aiState.patterns5.push({
-          seq: recent.join(","),
-          next: humanMove,
-        });
-      }
-    }
-
-    // Update state
-    session.games++;
-    session.moves.push(humanMove);
-    aiState.moveCounts[humanMove]++;
-    aiState.lastHumanMove = humanMove;
-    aiState.lastResult = result;
-
-    // Score tracking
-    if (result === "win") session.human++, allTime.human++;
-    if (result === "lose") session.computer++, allTime.computer++;
-
-    // Update session W/L/D
-    if (result === "win") session.win++;
-    if (result === "lose") session.loss++;
-    if (result === "draw") session.draw++;
-
-    // Update per-move stats
-    if (result === "win") {
-      session.moveStats[humanMove].win++;
-    } else if (result === "lose") {
-      session.moveStats[humanMove].loss++;
-    } else if (result === "draw") {
-      session.moveStats[humanMove].draw++;
-    }
-
-    updateScoreboard();
-
-    // Update decision box with the result
-    updateDecisionBox(computerMove, lastDecisionReason, result);
-
-    // Show dynamic result with animations
-    showDynamicResult(result);
-
-    // Remove old static game status text
-    // gameStatus.textContent = `${humanName} played ${humanMove} — Computer played ${computerMove}. You ${result}!`;
-    aiChoiceDisplay.textContent = "";
-
-    // Update counter
-    if (orbitCount) {
-      orbitCount.textContent = Math.max(100 - session.games, 0);
-    }
-
-    // End game logic
-    if (session.games >= 100) {
-      // Remove old static text - replaced with dynamic result display
-      // gameStatus.textContent = `Game Over! Final Score - You: ${session.win}, Robot: ${session.loss}, Draws: ${session.draw}`;
-      addGameToHistory();
-      renderHistoryTable();
-      // gameStatus.textContent = "Game Complete! Click Start Game for another round.";
-
-      // Show all algorithm buttons again
-      const algoSelector = document.querySelector(".algo-selector");
-      algoSelector.classList.remove("game-active");
-      // Remove selected class from all buttons
-      document
-        .querySelectorAll(".algo-btn")
-        .forEach((btn) => btn.classList.remove("selected"));
-
-      // Stop robot thinking completely
-      clearInterval(robotThinkingInterval);
-      robotThinkingInterval = null; // Clear the reference
-      const robotBtn = document.getElementById("robotChoiceBtn");
-      if (robotBtn) {
-        robotBtn.classList.remove("robot-thinking");
-        // Keep the final choice displayed without any animation
-        // Force update the button to ensure it shows the final choice
-        const choiceData = robotChoices.find(
-          (c) => c.name.toLowerCase() === computerMove
-        );
-        if (choiceData) {
-          robotBtn.innerHTML = `
-            ${choiceData.emoji} ${choiceData.name}
-            <span class="btn-stats robot-stats">Wins: ${session.loss}</span>
-          `;
-        }
-      }
-
-      // Disable choice buttons
-      choiceBtns.forEach((btn) => (btn.disabled = true));
-
-      // Don't restart thinking animation since game is over
-      return;
-    }
-
-    // Update pie chart
-    renderPlayerPieChart();
-
-    // Start thinking again for next round (if game not over)
-    if (session.games < 100) {
-      setTimeout(startRobotThinking, 2000); // 2 second pause to see robot's choice
-    }
-  };
-});
-
-// Helper functions
-function getChoiceEmoji(choice) {
-  if (choice === "rock") return "🪨";
-  if (choice === "paper") return "📄";
-  if (choice === "scissors") return "✂️";
-  return "";
-}
-function capitalize(str) {
-  return str.charAt(0).toUpperCase() + str.slice(1);
-}
-
-let lastDecisionReason = ""; // Store the last decision reason
-
-function getComputerMove(humanMove) {
-  const randomMove = () =>
-    ["rock", "paper", "scissors"][Math.floor(Math.random() * 3)];
-
-  if (mode === "random") {
-    const move = randomMove();
-    lastDecisionReason = "random choice selected it";
-    return move;
-  }
-
-  if (mode === "learn30") {
-    if (session.games < 30) {
-      const move = randomMove();
-      lastDecisionReason = "still learning your patterns (random choice)";
-      return move;
-    }
-
-    // 1. Learn player's overall tendencies
-    const totalMoves = Object.values(aiState.moveCounts).reduce(
-      (a, b) => a + b,
-      0
-    );
-    const probs = {
-      rock: aiState.moveCounts.rock / totalMoves,
-      paper: aiState.moveCounts.paper / totalMoves,
-      scissors: aiState.moveCounts.scissors / totalMoves,
-    };
-
-    // 2. Predict what human will play next
-    let predicted = Object.entries(probs).sort((a, b) => b[1] - a[1])[0][0];
-    let reason = `analysis shows you favor ${predicted} (${Math.round(
-      probs[predicted] * 100
-    )}%)`;
-
-    // 3. After loss: learn what human plays next
-    if (aiState.lastResult === "lose") {
-      const prev = aiState.lastHumanMove;
-      const nextMoveAfterLoss = aiState.afterLossMap[prev];
-      if (nextMoveAfterLoss) {
-        const mostLikely = Object.entries(nextMoveAfterLoss).sort(
-          (a, b) => b[1] - a[1]
-        )[0];
-        predicted = mostLikely[0];
-        reason = `after losing, you typically play ${predicted} next (${mostLikely[1]} times)`;
-      }
-    }
-
-    const move = counterMove(predicted);
-    lastDecisionReason = reason;
-    return move;
-  }
-
-  if (mode === "pattern50") {
-    if (session.games < 53) {
-      const move = randomMove();
-      lastDecisionReason = "still learning your patterns (random choice)";
-      return move;
-    }
-
-    const last3 = session.moves.slice(-3).join(",");
-    const found = aiState.patterns.find(p => p.seq === last3);
-    if (found) {
-      const patternCount = aiState.patterns.filter(p => p.seq === last3).length;
-      const move = counterMove(found.next);
-      lastDecisionReason = `human player did ${last3.replace(/,/g, ', ')} (${patternCount}) times already`;
-      return move;
-    } else {
-      const move = randomMove();
-      lastDecisionReason = `no pattern found for ${last3.replace(/,/g, ', ')} (random choice)`;
-      return move;
-    }
-  }
 
   if (mode === "uberlogic") {
     // Turn 1: No data, play random
@@ -424,10 +159,10 @@ function getComputerMove(humanMove) {
     };
 
     // --- Helper to add scores ---
-    const addScore = (move, baseScore, frequency, reasonLabel) => {
-      const points = baseScore * frequency;
+    const addScore = (move, baseScore, weight, reasonLabel) => {
+      const points = Math.round(baseScore * weight);
       predictions[move].score += points;
-      predictions[move].details.push(`${reasonLabel} (${points}pts)`);
+      predictions[move].details.push(`${reasonLabel} (${points})`);
     };
 
     // 1. Overall Frequency (Base: 15pts * % frequency)
@@ -443,47 +178,36 @@ function getComputerMove(humanMove) {
       }
     }
 
-    // 2. Patterns (Scores boosted to overpower frequency in late game)
-    // 5-Set: 100pts (was 50)
-    // 4-Set: 80pts (was 40)
-    // 3-Set: 60pts (was 30)
-    // 2-Set: 40pts (was 20)
+    // 2. Patterns with RECENCY BIAS (UberLogic V2)
+    // We iterate through all historical patterns. 
+    // Recent matches get higher weight (up to 3x total) than old matches.
     
-    // 5-move patterns
-    if (session.moves.length >= 5) {
-      const last5 = session.moves.slice(-5).join(",");
-      const matches = aiState.patterns5.filter(p => p.seq === last5);
-      matches.forEach(m => {
-        addScore(m.next, 100, 1, "5-Set");
-      });
-    }
+    // Helper to process patterns with recency
+    const processPatterns = (patternLength, baseScore, patternArray) => {
+        if (session.moves.length >= patternLength) {
+            const currentSeq = session.moves.slice(-patternLength).join(",");
+            const totalRecorded = patternArray.length;
+            
+            patternArray.forEach((p, index) => {
+                // Check if this historical pattern matches current sequence
+                if (p.seq === currentSeq) {
+                    // Recency Formula:
+                    // Index 0 (Oldest) -> Multiplier 1.0
+                    // Index Max (Newest) -> Multiplier 3.0
+                    // This creates a strong bias towards recent behavior changes
+                    const recencyMultiplier = 1 + ((index / (totalRecorded || 1)) * 2); 
+                    
+                    addScore(p.next, baseScore, recencyMultiplier, `${patternLength}-Set`);
+                }
+            });
+        }
+    };
 
-    // 4-move patterns
-    if (session.moves.length >= 4) {
-      const last4 = session.moves.slice(-4).join(",");
-      const matches = aiState.patterns4.filter(p => p.seq === last4);
-      matches.forEach(m => {
-        addScore(m.next, 80, 1, "4-Set");
-      });
-    }
-
-    // 3-move patterns
-    if (session.moves.length >= 3) {
-      const last3 = session.moves.slice(-3).join(",");
-      const matches = aiState.patterns3.filter(p => p.seq === last3);
-      matches.forEach(m => {
-        addScore(m.next, 60, 1, "3-Set");
-      });
-    }
-
-    // 2-move patterns
-    if (session.moves.length >= 2) {
-      const last2 = session.moves.slice(-2).join(",");
-      const matches = aiState.patterns2.filter(p => p.seq === last2);
-      matches.forEach(m => {
-        addScore(m.next, 40, 1, "2-Set");
-      });
-    }
+    // Apply Recency Logic to all pattern lengths (Base scores balanced for this V2 system)
+    processPatterns(5, 100, aiState.patterns5);
+    processPatterns(4, 80, aiState.patterns4);
+    processPatterns(3, 60, aiState.patterns3);
+    processPatterns(2, 40, aiState.patterns2);
 
     // 3. Contextual Behavior (Base: 40pts - increased from 25)
     let contextHistory = null;
@@ -513,7 +237,8 @@ function getComputerMove(humanMove) {
     const topMove = sorted[0]; // [move, data]
     const topMoveName = topMove[0];
     const topMoveScore = topMove[1].score;
-    const secondMoveScore = sorted[1].score;
+    // Fix: Ensure sorted[1] exists before accessing property
+    const secondMoveScore = sorted[1] ? sorted[1].score : 0;
     
     const totalScore = sorted.reduce((sum, item) => sum + item[1].score, 0);
 
@@ -527,17 +252,10 @@ function getComputerMove(humanMove) {
     // A. Raw Vote Share (0-100%)
     const rawShare = topMoveScore / totalScore;
 
-    // B. Decisiveness (Bonus for lead over #2)
-    // If top is 500 and second is 0, this is 1.0. If 500 vs 490, this is 0.5.
-    const gapStrength = topMoveScore / (topMoveScore + secondMoveScore + 1);
-
-    // Combine them? Let's stick to rawShare for simplicity of explanation, 
-    // but scale it by experience.
-    
-    // C. Experience Factor (Logarithmic ramp-up)
-    // Turn 2 (1 game): log10(2)/2 = 0.3/2 = 0.15 (15%)
-    // Turn 10 (9 games): log10(10)/2 = 1/2 = 0.50 (50%)
-    // Turn 100 (99 games): log10(100)/2 = 2/2 = 1.0 (100%)
+    // B. Experience Factor (Logarithmic ramp-up)
+    // Turn 2 (1 game): log10(2)/2 = 0.15 (15%)
+    // Turn 10 (9 games): log10(10)/2 = 0.50 (50%)
+    // Turn 100 (99 games): log10(100)/2 = 1.0 (100%)
     const experienceFactor = Math.min(1, Math.log10(session.games + 1) / 2);
 
     // Final Confidence
@@ -548,7 +266,7 @@ function getComputerMove(humanMove) {
     topMove[1].details.forEach(d => {
        // Extract label part (e.g. "2-Set")
        const label = d.split('(')[0].trim();
-       const pts = parseInt(d.match(/\((\d+)pts\)/)[1]);
+       const pts = parseInt(d.match(/\((\d+)\)/)[1]); // Updated regex for no "pts" text
        
        if (!reasonSummary[label]) reasonSummary[label] = { pts: 0, count: 0 };
        reasonSummary[label].pts += pts;
@@ -570,7 +288,6 @@ function getComputerMove(humanMove) {
     // Counter the predicted move
     return counterMove(topMoveName);
   }
-
   const move = randomMove();
   lastDecisionReason = "default random choice";
   return move;

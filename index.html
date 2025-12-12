@@ -35,35 +35,13 @@
     </div>
 
     <div class="algo-selector">
-      <label
-        class="algo-btn tooltip-hover-green"
-        data-tooltip="The robot will make completely random choices on every turn."
-      >
-        <input type="radio" name="mode" value="random" checked />
-        <span>Random Choice</span>
-      </label>
-      <label
-        class="algo-btn tooltip-hover-green"
-        data-tooltip="The robot will randomly choose for 30 turns, whilst watching you and learning. After 30 turns, it will start using what it has learned against you."
-      >
-        <input type="radio" name="mode" value="learn30" />
-        <span>Learn After 30</span>
-      </label>
-      <label
-        class="algo-btn tooltip-hover-green"
-        data-tooltip="The robot will watch any patterns you use for 30 turns, and then start countering them."
-      >
-        <input type="radio" name="mode" value="pattern50" />
-        <span>Pattern Matching</span>
-      </label>
-      <label
-        class="algo-btn tooltip-hover-green"
-        data-tooltip="Advanced AI that learns from turn 2 onwards. Tracks 2-5 move patterns, post-win/loss/draw behavior, and overall frequency. Combines all strategies with weighted scoring for maximum effectiveness."
-      >
-        <input type="radio" name="mode" value="uberlogic" />
-        <span>UberLogic 🧠</span>
-      </label>
-    </div>
+    <select id="algoSelect" class="glass-panel" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.3); color: white; font-family: 'Inter', sans-serif; cursor: pointer;">
+      <option value="random">Random Choice</option>
+      <option value="learn30">Learn After 30 (Frequency)</option>
+      <option value="pattern50">Pattern Matching (Delayed)</option>
+      <option value="uberlogic" selected>UberLogic 🧠 (Adaptive AI)</option>
+    </select>
+  </div>
 
     <div id="gameArea" style="display: none">
       <h2 id="gameStatus"></h2>
