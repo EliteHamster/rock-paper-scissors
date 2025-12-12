@@ -170,7 +170,7 @@ rock-paper-scissors/
 
 ### UberLogic Mode 🧠
 
-**The Most Advanced AI** - Combines all learning strategies with no waiting period.
+**The "Committee of Experts" AI** - Uses a **Dynamic Weighted Voting System**. Instead of a single logic module making the decision, every learning strategy casts "votes" on what the player will do next.
 
 **Turn 1:**
 
@@ -178,42 +178,36 @@ rock-paper-scissors/
 
 **Turn 2+:**
 
-- Immediately starts learning and adapting
-- Uses weighted scoring system to combine multiple signals
+- All active strategies cast votes for what the player will play.
+- **Votes are weighted** by how "proven" the pattern is (Score = Base × Frequency).
+- The AI calculates a **Confidence Score** (%) based on the vote distribution.
 
-**Learning Systems (all active simultaneously):**
+**The Voting Committee (Base Scores):**
 
-1. **Pattern Detection** (Weighted by length)
+1. **Pattern Detection** (Multiplied by # of times pattern occurred)
 
-   - 5-move patterns (Weight: 50 points) - Highest priority
-   - 4-move patterns (Weight: 35 points)
-   - 3-move patterns (Weight: 25 points)
-   - 2-move patterns (Weight: 15 points)
+   - **5-Set Pattern:** 50 points (x Count)
+   - **4-Set Pattern:** 40 points (x Count)
+   - **3-Set Pattern:** 30 points (x Count)
+   - **2-Set Pattern:** 20 points (x Count)
 
-2. **Contextual Behavior** (Weight: 30 points each)
+2. **Contextual Habits** (Multiplied by # of times habit occurred)
 
-   - Post-win behavior - What player does after winning
-   - Post-loss behavior - What player does after losing
-   - Post-draw behavior - What player does after drawing
+   - **Post-Win/Loss/Draw:** 25 points (x Count)
 
-3. **Overall Frequency** (Weight: 10 points)
-   - Tracks most-played hand
-   - Provides baseline prediction
+3. **Overall Frequency** (Base 15 points x Percentage)
+   - If player chooses Rock 60% of time → 15 \* 6 = 90 points.
 
 **Decision Process:**
 
 ```javascript
-// For each possible move (rock/paper/scissors):
-// 1. Check all pattern lengths (5 down to 2)
-// 2. Check contextual behavior (win/loss/draw)
-// 3. Add frequency baseline
-// 4. Sum all weighted scores
-// 5. Predict highest-scoring move
-// 6. Counter the prediction
+// 1. Collect votes from all strategies
+// 2. Sum votes for Rock, Paper, and Scissors
+// 3. Calculate Confidence: (Winning_Score / Total_Score) %
 
-// Example reasoning:
-"predicted rock based on: 5-move pattern detected (3x),
-after loss pattern (5x), overall frequency 45%"
+// Example Decision Box Output:
+"Predicted Rock with 88% confidence.
+Votes: 2-Set x3 (60pts), Freq 45% (67pts), After Loss x2 (50pts)"
 ```
 
 **Advantages:**
@@ -314,7 +308,43 @@ All files are served statically:
 
 ---
 
-## 📝 License
+## � Recent Updates
+
+### December 2025 - UberLogic AI Implementation
+
+**New Features:**
+
+- ✅ Added **UberLogic 🧠** AI mode - the most advanced opponent
+- ✅ Multi-strategy learning system (5 strategies combined)
+- ✅ Weighted scoring algorithm for intelligent predictions
+- ✅ Pattern detection for 2-5 move sequences
+- ✅ Contextual behavior tracking (post-win/loss/draw)
+- ✅ Transparent decision reasoning in robot decision box
+- ✅ No waiting period - learns from turn 2 onwards
+
+**Technical Improvements:**
+
+- Enhanced `aiState` object with new tracking structures
+- Added ~210 lines of sophisticated AI logic
+- Comprehensive documentation in README and UBERLOGIC_IMPLEMENTATION.md
+
+---
+
+## 🎯 Future Enhancement Ideas
+
+- LocalStorage integration for persistent game history
+- Additional AI modes (e.g., Markov chains, neural networks)
+- Multiplayer support
+- Sound effects and music
+- Difficulty levels
+- Mobile-responsive improvements
+- Export game statistics
+- Leaderboard system
+- AI learning visualization dashboard
+
+---
+
+## �📝 License
 
 This project is for testing AI approaches to win at Rock-Paper-Scissors.
 

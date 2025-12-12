@@ -2,7 +2,7 @@
 
 ## Overview
 
-Successfully implemented a sophisticated "UberLogic" AI mode that combines multiple learning strategies to create the most effective Rock-Paper-Scissors opponent.
+Successfully implemented a sophisticated "UberLogic" AI mode that uses a **Dynamic Weighted Voting System**. It acts like a "Committee of Experts" where multiple strategies cast weighted votes to determine the most likely outcome.
 
 ## Key Features
 
@@ -12,35 +12,30 @@ Successfully implemented a sophisticated "UberLogic" AI mode that combines multi
 - Turn 2+: Starts learning and countering immediately
 - Continuously improves predictions as more data accumulates
 
-### 2. **Multi-Strategy Learning System**
+### 2. **The Voting Committee (Strategies)**
 
-#### Pattern Detection (Weighted by Length)
+#### Pattern Detection (Base Score × Frequency)
 
-- **5-move patterns** (Weight: 50 points) - Highest priority
-- **4-move patterns** (Weight: 35 points)
-- **3-move patterns** (Weight: 25 points)
-- **2-move patterns** (Weight: 15 points)
+- **5-move patterns** (Base: 50 pts)
+- **4-move patterns** (Base: 40 pts)
+- **3-move patterns** (Base: 30 pts)
+- **2-move patterns** (Base: 20 pts)
 
-#### Contextual Behavior Tracking (Weight: 30 points each)
+#### Contextual Behavior (Base: 25 pts × Frequency)
 
-- **Post-Win Behavior** - What player does after winning
-- **Post-Loss Behavior** - What player does after losing
-- **Post-Draw Behavior** - What player does after drawing
+- What player does after Win/Loss/Draw
 
-#### Overall Frequency Analysis (Weight: 10 points)
+#### Overall Frequency (Base: 15 pts × Frequency %)
 
-- Tracks most-played hand (rock/paper/scissors)
-- Used as baseline/fallback prediction
+- If player uses Rock 50% of the time, that counts as 50 frequency points.
 
-### 3. **Weighted Scoring System**
+### 3. **Confidence Calculation**
 
-The AI assigns scores to each possible move (rock/paper/scissors) based on:
+Instead of binary choices, the AI calculates confidence:
 
-1. Longest matching pattern gets highest priority
-2. Recent context (post-win/loss/draw) gets high weight
-3. Overall frequency provides baseline
-4. All scores are combined to make final prediction
-5. AI counters the highest-scoring predicted move
+- `Confidence % = (Winning Vote Score / Total Vote Score)`
+- If confidence is low (<40%), the AI knows it's guessing.
+- If confidence is high (>75%), the AI is "sure".
 
 ## Technical Implementation
 
@@ -94,8 +89,8 @@ Counter the prediction
 The robot decision box will show reasoning like:
 
 ```
-"predicted rock based on: 5-move pattern detected (3x),
-after loss pattern (5x), overall frequency 45%"
+"Predicted Rock with 88% confidence.
+Votes: 2-Set x3 (60pts), Freq 45% (67pts), After Loss x2 (50pts)"
 ```
 
 This transparency helps players understand how the AI is learning and adapting.

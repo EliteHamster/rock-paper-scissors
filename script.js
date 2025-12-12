@@ -416,130 +416,144 @@ function getComputerMove(humanMove) {
       return move;
     }
 
-    // Turn 2+: Use all available learning
-    const predictions = {}; // { move: { score: number, reasons: [] } }
-    predictions.rock = { score: 0, reasons: [] };
-    predictions.paper = { score: 0, reasons: [] };
-    predictions.scissors = { score: 0, reasons: [] };
+    // Initialize predictions with 0 score
+    const predictions = {
+      rock: { score: 0, details: [] },
+      paper: { score: 0, details: [] },
+      scissors: { score: 0, details: [] }
+    };
 
-    // 1. Check for 5-move pattern (highest priority)
+    // --- Helper to add scores ---
+    const addScore = (move, baseScore, frequency, reasonLabel) => {
+      const points = baseScore * frequency;
+      predictions[move].score += points;
+      predictions[move].details.push(`${reasonLabel} (${points}pts)`);
+    };
+
+    // 1. Overall Frequency (Base: 15pts * % frequency)
+    // Using percentage (0-100) instead of raw count to normalize influence
+    const totalMoves = Object.values(aiState.moveCounts).reduce((a, b) => a + b, 0);
+    if (totalMoves > 0) {
+      for (const [m, count] of Object.entries(aiState.moveCounts)) {
+        if (count > 0) {
+           const percent = Math.round((count / totalMoves) * 10); // scale 0-10
+           // e.g., 50% frequency = 5 * 15 = 75 points
+           addScore(m, 15, percent, `Freq ${Math.round((count/totalMoves)*100)}%`);
+        }
+      }
+    }
+
+    // 2. Patterns (Base Scores: 5-set=50, 4-set=40, 3-set=30, 2-set=20)
+    // We check ALL pattern lengths and add their votes together
+    
+    // 5-move patterns
     if (session.moves.length >= 5) {
       const last5 = session.moves.slice(-5).join(",");
       const matches = aiState.patterns5.filter(p => p.seq === last5);
-      if (matches.length > 0) {
-        const nextMoves = {};
-        matches.forEach(m => {
-          nextMoves[m.next] = (nextMoves[m.next] || 0) + 1;
-        });
-        const mostLikely = Object.entries(nextMoves).sort((a, b) => b[1] - a[1])[0];
-        predictions[mostLikely[0]].score += 50;
-        predictions[mostLikely[0]].reasons.push(`5-move pattern detected (${mostLikely[1]}x)`);
-      }
+      matches.forEach(m => {
+        // Multiplier is always 1 for each individual historical occurrence found
+        addScore(m.next, 50, 1, "5-Set");
+      });
     }
 
-    // 2. Check for 4-move pattern
+    // 4-move patterns
     if (session.moves.length >= 4) {
       const last4 = session.moves.slice(-4).join(",");
       const matches = aiState.patterns4.filter(p => p.seq === last4);
-      if (matches.length > 0) {
-        const nextMoves = {};
-        matches.forEach(m => {
-          nextMoves[m.next] = (nextMoves[m.next] || 0) + 1;
-        });
-        const mostLikely = Object.entries(nextMoves).sort((a, b) => b[1] - a[1])[0];
-        predictions[mostLikely[0]].score += 35;
-        predictions[mostLikely[0]].reasons.push(`4-move pattern detected (${mostLikely[1]}x)`);
-      }
+      matches.forEach(m => {
+        addScore(m.next, 40, 1, "4-Set");
+      });
     }
 
-    // 3. Check for 3-move pattern
+    // 3-move patterns
     if (session.moves.length >= 3) {
       const last3 = session.moves.slice(-3).join(",");
       const matches = aiState.patterns3.filter(p => p.seq === last3);
-      if (matches.length > 0) {
-        const nextMoves = {};
-        matches.forEach(m => {
-          nextMoves[m.next] = (nextMoves[m.next] || 0) + 1;
-        });
-        const mostLikely = Object.entries(nextMoves).sort((a, b) => b[1] - a[1])[0];
-        predictions[mostLikely[0]].score += 25;
-        predictions[mostLikely[0]].reasons.push(`3-move pattern detected (${mostLikely[1]}x)`);
-      }
+      matches.forEach(m => {
+        addScore(m.next, 30, 1, "3-Set");
+      });
     }
 
-    // 4. Check for 2-move pattern
+    // 2-move patterns
     if (session.moves.length >= 2) {
       const last2 = session.moves.slice(-2).join(",");
       const matches = aiState.patterns2.filter(p => p.seq === last2);
-      if (matches.length > 0) {
-        const nextMoves = {};
-        matches.forEach(m => {
-          nextMoves[m.next] = (nextMoves[m.next] || 0) + 1;
-        });
-        const mostLikely = Object.entries(nextMoves).sort((a, b) => b[1] - a[1])[0];
-        predictions[mostLikely[0]].score += 15;
-        predictions[mostLikely[0]].reasons.push(`2-move pattern detected (${mostLikely[1]}x)`);
-      }
+      matches.forEach(m => {
+        addScore(m.next, 20, 1, "2-Set");
+      });
     }
 
-    // 5. Check contextual behavior (post-win/loss/draw)
+    // 3. Contextual Behavior (Base: 25pts)
+    let contextHistory = null;
+    let contextLabel = "";
+    
     if (aiState.lastResult === 'win') {
-      const afterWin = aiState.afterWinMap[aiState.lastHumanMove];
-      if (afterWin) {
-        const mostLikely = Object.entries(afterWin).sort((a, b) => b[1] - a[1])[0];
-        predictions[mostLikely[0]].score += 30;
-        predictions[mostLikely[0]].reasons.push(`after win pattern (${mostLikely[1]}x)`);
-      }
+      contextHistory = aiState.afterWinMap[aiState.lastHumanMove];
+      contextLabel = "After Win";
     } else if (aiState.lastResult === 'lose') {
-      const afterLoss = aiState.afterLossMap[aiState.lastHumanMove];
-      if (afterLoss) {
-        const mostLikely = Object.entries(afterLoss).sort((a, b) => b[1] - a[1])[0];
-        predictions[mostLikely[0]].score += 30;
-        predictions[mostLikely[0]].reasons.push(`after loss pattern (${mostLikely[1]}x)`);
-      }
+      contextHistory = aiState.afterLossMap[aiState.lastHumanMove];
+      contextLabel = "After Loss";
     } else if (aiState.lastResult === 'draw') {
-      const afterDraw = aiState.afterDrawMap[aiState.lastHumanMove];
-      if (afterDraw) {
-        const mostLikely = Object.entries(afterDraw).sort((a, b) => b[1] - a[1])[0];
-        predictions[mostLikely[0]].score += 30;
-        predictions[mostLikely[0]].reasons.push(`after draw pattern (${mostLikely[1]}x)`);
+      contextHistory = aiState.afterDrawMap[aiState.lastHumanMove];
+      contextLabel = "After Draw";
+    }
+
+    if (contextHistory) {
+      for (const [m, count] of Object.entries(contextHistory)) {
+        addScore(m, 25, count, contextLabel); // 25pts * times happened
       }
     }
 
-    // 6. Overall frequency (fallback/baseline)
-    const totalMoves = Object.values(aiState.moveCounts).reduce((a, b) => a + b, 0);
-    if (totalMoves > 0) {
-      const probs = {
-        rock: aiState.moveCounts.rock / totalMoves,
-        paper: aiState.moveCounts.paper / totalMoves,
-        scissors: aiState.moveCounts.scissors / totalMoves,
-      };
-      predictions.rock.score += probs.rock * 10;
-      predictions.paper.score += probs.paper * 10;
-      predictions.scissors.score += probs.scissors * 10;
-      
-      // Add frequency to reasons for the most common move
-      const mostCommon = Object.entries(probs).sort((a, b) => b[1] - a[1])[0];
-      predictions[mostCommon[0]].reasons.push(`overall frequency ${Math.round(mostCommon[1] * 100)}%`);
+    // --- Decision Time ---
+    
+    // Sort by score
+    const sorted = Object.entries(predictions).sort((a, b) => b[1].score - a[1].score);
+    const topMove = sorted[0]; // [move, data]
+    const topMoveName = topMove[0];
+    const topMoveScore = topMove[1].score;
+    
+    const totalScore = sorted.reduce((sum, item) => sum + item[1].score, 0);
+
+    // Confidence Calculation
+    // If total score is 0, we have no data -> random
+    if (totalScore === 0) {
+       const move = randomMove();
+       lastDecisionReason = "No patterns found (Random)";
+       return move;
     }
 
-    // Find the highest scoring prediction
-    const sortedPredictions = Object.entries(predictions).sort((a, b) => b[1].score - a[1].score);
-    const predicted = sortedPredictions[0][0];
-    const predictionData = sortedPredictions[0][1];
+    const confidence = Math.round((topMoveScore / totalScore) * 100);
 
-    // Build reason string
-    if (predictionData.reasons.length > 0) {
-      lastDecisionReason = `predicted ${predicted} based on: ${predictionData.reasons.join(', ')}`;
-    } else {
-      // No patterns found, use random
-      const move = randomMove();
-      lastDecisionReason = "insufficient data, using random choice";
-      return move;
-    }
+    // Construct detailed reasoning string
+    // e.g. "High Confidence (80%): 2-Set (40pts), Strong Hand (150pts)"
+    // We consolidate details to avoid spamming the logs
+    
+    // Summarize the top move's triggers
+    // The details array looks like: ["2-Set (20pts)", "2-Set (20pts)", "Freq 50% (75pts)"]
+    // We want to group them: "2-Set x2 (40pts), Freq 50% (75pts)"
+    
+    const reasonSummary = {};
+    topMove[1].details.forEach(d => {
+       // Extract label part (e.g. "2-Set")
+       const label = d.split('(')[0].trim();
+       const pts = parseInt(d.match(/\((\d+)pts\)/)[1]);
+       
+       if (!reasonSummary[label]) reasonSummary[label] = { pts: 0, count: 0 };
+       reasonSummary[label].pts += pts;
+       reasonSummary[label].count++;
+    });
 
-    const move = counterMove(predicted);
-    return move;
+    const reasonsFormatted = Object.entries(reasonSummary)
+      .map(([label, data]) => {
+         const countStr = data.count > 1 ? `x${data.count}` : "";
+         return `${label}${countStr} (${data.pts}pts)`;
+      })
+      .join(", ");
+
+    lastDecisionReason = `Predicted <strong>${topMoveName}</strong> with <strong>${confidence}%</strong> confidence.<br>Votes: ${reasonsFormatted}`;
+
+    // Counter the predicted move
+    return counterMove(topMoveName);
   }
 
   const move = randomMove();
