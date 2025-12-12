@@ -143,6 +143,70 @@ startBtn.onclick = () => {
 
 
 
+
+
+
+const randomMove = () =>
+    ["rock", "paper", "scissors"][Math.floor(Math.random() * 3)];
+
+function getComputerMove(humanMove) {
+  if (mode === "random") {
+    const move = randomMove();
+    lastDecisionReason = "random choice selected it";
+    return move;
+  }
+
+  if (mode === "learn30") {
+    if (session.games < 30) {
+      const move = randomMove();
+      lastDecisionReason = `calibrating (Game ${session.games}/30)`;
+      return move;
+    }
+    // After 30 games, counter the most frequent move
+    const stats = aiState.moveCounts;
+    let mostFrequent = "rock";
+    let maxCount = -1;
+    for (const m of ["rock", "paper", "scissors"]) {
+      if (stats[m] > maxCount) {
+        maxCount = stats[m];
+        mostFrequent = m;
+      }
+    }
+    lastDecisionReason = `countering your most frequent move (${mostFrequent})`;
+    return counterMove(mostFrequent);
+  }
+
+  if (mode === "pattern50") {
+    // Collect patterns after 30 games, start using them after 50
+    if (session.games < 50) {
+      const move = randomMove();
+      lastDecisionReason = `observing patterns (Game ${session.games}/50)`;
+      return move;
+    }
+    
+    // Look for last 3 moves pattern
+    if (session.moves.length >= 3) {
+      const last3 = session.moves.slice(-3).join(",");
+      const match = aiState.patterns3.find((p) => p.seq === last3);
+      if (match) {
+        lastDecisionReason = "detected 3-move pattern similarity";
+        return counterMove(match.next);
+      }
+    }
+    // Fallback to frequency
+    const stats = aiState.moveCounts;
+    let mostFrequent = "rock";
+    let maxCount = -1;
+    for (const m of ["rock", "paper", "scissors"]) {
+      if (stats[m] > maxCount) {
+        maxCount = stats[m];
+        mostFrequent = m;
+      }
+    }
+    lastDecisionReason = "fallback to frequency data";
+    return counterMove(mostFrequent);
+  }
+
   if (mode === "uberlogic") {
     // Turn 1: No data, play random
     if (session.games === 0) {
@@ -288,6 +352,7 @@ startBtn.onclick = () => {
     // Counter the predicted move
     return counterMove(topMoveName);
   }
+
   const move = randomMove();
   lastDecisionReason = "default random choice";
   return move;
