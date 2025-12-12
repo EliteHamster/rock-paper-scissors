@@ -198,17 +198,35 @@ rock-paper-scissors/
 3. **Overall Frequency** (Base 15 points x Percentage)
    - If player chooses Rock 60% of time → 15 \* 6 = 90 points.
 
-**Decision Process:**
+**The Mathematical Algorithm:**
 
-```javascript
-// 1. Collect votes from all strategies
-// 2. Sum votes for Rock, Paper, and Scissors
-// 3. Calculate Confidence: (Winning_Score / Total_Score) %
+The AI calculates a **Vote Score** $V(m)$ for each possible move $m \in \{R, P, S\}$:
 
-// Example Decision Box Output:
-"Predicted Rock with 88% confidence.
-Votes: 2-Set x3 (60pts), Freq 45% (67pts), After Loss x2 (50pts)"
-```
+$$V(m) = V_{pattern}(m) + V_{context}(m) + V_{freq}(m)$$
+
+Where:
+
+- **Pattern Component:** $V_{pattern}(m) = \sum_{k=2}^{5} (W_k \times C_{k}(m))$
+  - $W_5 = 100, W_4 = 80, W_3 = 60, W_2 = 40$ (Weights for 5, 4, 3, 2-move patterns)
+  - $C_k(m)$ = Number of times pattern of length $k$ predicted move $m$
+- **Context Component:** $V_{context}(m) = 40 \times C_{ctx}(m)$
+  - $C_{ctx}(m)$ = Times move $m$ was played after the current result (Win/Loss/Draw)
+- **Frequency Component:** $V_{freq}(m) = 15 \times P(m)$
+  - $P(m)$ = Player's usage percentage of move $m$ (scaled 0-10)
+
+**Confidence Calculation:**
+
+The confidence percentage $C$ is scaled by an **Experience Curve** based on games played $N$:
+
+$$C = \left( \frac{\max(V(m))}{\sum V(m)} \right) \times \min\left(1, \frac{\log_{10}(N+1)}{2}\right) \times 100$$
+
+- **Early Game ($N < 10$):** LOG factor reduces confidence (e.g., Turn 2 ≈ 15%).
+- **Late Game ($N > 90$):** LOG factor allows up to 100% confidence.
+
+**Decision Output:**
+
+- Predict move $m$ with highest $V(m)$.
+- Play counter-move to $m$.
 
 **Advantages:**
 

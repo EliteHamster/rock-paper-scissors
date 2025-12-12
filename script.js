@@ -443,16 +443,18 @@ function getComputerMove(humanMove) {
       }
     }
 
-    // 2. Patterns (Base Scores: 5-set=50, 4-set=40, 3-set=30, 2-set=20)
-    // We check ALL pattern lengths and add their votes together
+    // 2. Patterns (Scores boosted to overpower frequency in late game)
+    // 5-Set: 100pts (was 50)
+    // 4-Set: 80pts (was 40)
+    // 3-Set: 60pts (was 30)
+    // 2-Set: 40pts (was 20)
     
     // 5-move patterns
     if (session.moves.length >= 5) {
       const last5 = session.moves.slice(-5).join(",");
       const matches = aiState.patterns5.filter(p => p.seq === last5);
       matches.forEach(m => {
-        // Multiplier is always 1 for each individual historical occurrence found
-        addScore(m.next, 50, 1, "5-Set");
+        addScore(m.next, 100, 1, "5-Set");
       });
     }
 
@@ -461,7 +463,7 @@ function getComputerMove(humanMove) {
       const last4 = session.moves.slice(-4).join(",");
       const matches = aiState.patterns4.filter(p => p.seq === last4);
       matches.forEach(m => {
-        addScore(m.next, 40, 1, "4-Set");
+        addScore(m.next, 80, 1, "4-Set");
       });
     }
 
@@ -470,7 +472,7 @@ function getComputerMove(humanMove) {
       const last3 = session.moves.slice(-3).join(",");
       const matches = aiState.patterns3.filter(p => p.seq === last3);
       matches.forEach(m => {
-        addScore(m.next, 30, 1, "3-Set");
+        addScore(m.next, 60, 1, "3-Set");
       });
     }
 
@@ -479,11 +481,11 @@ function getComputerMove(humanMove) {
       const last2 = session.moves.slice(-2).join(",");
       const matches = aiState.patterns2.filter(p => p.seq === last2);
       matches.forEach(m => {
-        addScore(m.next, 20, 1, "2-Set");
+        addScore(m.next, 40, 1, "2-Set");
       });
     }
 
-    // 3. Contextual Behavior (Base: 25pts)
+    // 3. Contextual Behavior (Base: 40pts - increased from 25)
     let contextHistory = null;
     let contextLabel = "";
     
@@ -500,7 +502,7 @@ function getComputerMove(humanMove) {
 
     if (contextHistory) {
       for (const [m, count] of Object.entries(contextHistory)) {
-        addScore(m, 25, count, contextLabel); // 25pts * times happened
+        addScore(m, 40, count, contextLabel); // 40pts * times happened
       }
     }
 
@@ -511,27 +513,37 @@ function getComputerMove(humanMove) {
     const topMove = sorted[0]; // [move, data]
     const topMoveName = topMove[0];
     const topMoveScore = topMove[1].score;
+    const secondMoveScore = sorted[1].score;
     
     const totalScore = sorted.reduce((sum, item) => sum + item[1].score, 0);
 
     // Confidence Calculation
-    // If total score is 0, we have no data -> random
     if (totalScore === 0) {
        const move = randomMove();
        lastDecisionReason = "No patterns found (Random)";
        return move;
     }
 
-    const confidence = Math.round((topMoveScore / totalScore) * 100);
+    // A. Raw Vote Share (0-100%)
+    const rawShare = topMoveScore / totalScore;
+
+    // B. Decisiveness (Bonus for lead over #2)
+    // If top is 500 and second is 0, this is 1.0. If 500 vs 490, this is 0.5.
+    const gapStrength = topMoveScore / (topMoveScore + secondMoveScore + 1);
+
+    // Combine them? Let's stick to rawShare for simplicity of explanation, 
+    // but scale it by experience.
+    
+    // C. Experience Factor (Logarithmic ramp-up)
+    // Turn 2 (1 game): log10(2)/2 = 0.3/2 = 0.15 (15%)
+    // Turn 10 (9 games): log10(10)/2 = 1/2 = 0.50 (50%)
+    // Turn 100 (99 games): log10(100)/2 = 2/2 = 1.0 (100%)
+    const experienceFactor = Math.min(1, Math.log10(session.games + 1) / 2);
+
+    // Final Confidence
+    const confidence = Math.round(rawShare * experienceFactor * 100);
 
     // Construct detailed reasoning string
-    // e.g. "High Confidence (80%): 2-Set (40pts), Strong Hand (150pts)"
-    // We consolidate details to avoid spamming the logs
-    
-    // Summarize the top move's triggers
-    // The details array looks like: ["2-Set (20pts)", "2-Set (20pts)", "Freq 50% (75pts)"]
-    // We want to group them: "2-Set x2 (40pts), Freq 50% (75pts)"
-    
     const reasonSummary = {};
     topMove[1].details.forEach(d => {
        // Extract label part (e.g. "2-Set")
@@ -546,11 +558,14 @@ function getComputerMove(humanMove) {
     const reasonsFormatted = Object.entries(reasonSummary)
       .map(([label, data]) => {
          const countStr = data.count > 1 ? `x${data.count}` : "";
-         return `${label}${countStr} (${data.pts}pts)`;
+         return `${label}${countStr} (${data.pts})`;
       })
       .join(", ");
 
-    lastDecisionReason = `Predicted <strong>${topMoveName}</strong> with <strong>${confidence}%</strong> confidence.<br>Votes: ${reasonsFormatted}`;
+    // Add visual indicator of confidence low/med/high
+    let confColor = confidence > 70 ? "#43ea7f" : confidence > 40 ? "#ffeb3b" : "#ff4f4f"; // Green, Yellow, Red
+    
+    lastDecisionReason = `Predicted <strong>${topMoveName}</strong> with <strong style="color:${confColor}">${confidence}%</strong> confidence.<br>Votes: ${reasonsFormatted}`;
 
     // Counter the predicted move
     return counterMove(topMoveName);
