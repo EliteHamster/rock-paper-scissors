@@ -364,6 +364,113 @@ function counterMove(move) {
   return "rock";
 }
 
+// --- Game Logic ---
+
+choiceBtns.forEach((btn) => {
+  btn.addEventListener("click", () => {
+    if (session.games >= 100) return;
+    const humanMove = btn.dataset.choice;
+    playRound(humanMove);
+  });
+});
+
+function playRound(humanMove) {
+    const robotMove = getComputerMove(humanMove);
+    const result = getResult(humanMove, robotMove);
+
+    // Update Session Stats
+    session.games++;
+    session.moves.push(humanMove);
+    
+    if (result === "win") session.win++;
+    else if (result === "lose") session.loss++;
+    else session.draw++;
+
+    // Update Move Specific Stats
+    if (result === "win") session.moveStats[humanMove].win++;
+    else if (result === "lose") session.moveStats[humanMove].loss++;
+    else session.moveStats[humanMove].draw++;
+
+    // Update UI
+    stopRobotThinking(robotMove); // Show the concrete move
+    showDynamicResult(result);
+    updateScoreboard();
+    updateDecisionBox(robotMove, lastDecisionReason, result);
+    renderPlayerPieChart();
+
+    // Update AI Memory
+    updateAIMemory(humanMove, result);
+    
+    // Check Game Over
+    if (session.games >= 100) {
+        endGame();
+    } else {
+        // Decrement orbit counter (100 -> 0)
+        if (orbitCount) orbitCount.textContent = 100 - session.games;
+        
+        // Restart robot thinking for next turn
+        setTimeout(startRobotThinking, 1500); 
+    }
+}
+
+function updateAIMemory(humanMove, result) {
+    // 1. Frequency
+    aiState.moveCounts[humanMove]++;
+
+    // 2. Contextual (After Win/Loss/Draw)
+    // We record what the player did *after* the previous result
+    if (aiState.lastResult && aiState.lastHumanMove) {
+        let contextMap = null;
+        if (aiState.lastResult === 'win') contextMap = aiState.afterWinMap;
+        else if (aiState.lastResult === 'lose') contextMap = aiState.afterLossMap;
+        else if (aiState.lastResult === 'draw') contextMap = aiState.afterDrawMap;
+        
+        if (contextMap) {
+            // Ensure the nested map exists for the *previous* move
+            // e.g. afterWinMap['rock'] = { rock:0, paper:0, scissors:0 }
+            if (!contextMap[aiState.lastHumanMove]) {
+                contextMap[aiState.lastHumanMove] = { rock:0, paper:0, scissors:0 };
+            }
+            contextMap[aiState.lastHumanMove][humanMove]++;
+        }
+    }
+
+    // 3. Patterns (2, 3, 4, 5)
+    // We're recording the sequence that *led* to the current move.
+    const moves = session.moves;
+    const n = moves.length; // total moves including current
+    
+    const recordPattern = (length, array) => {
+        // Need length+1 moves total to define a pattern of 'length' predicting 'next'
+        // e.g. Length 2: [R, P] -> S. We need 3 moves (R,P,S).
+        if (n > length) {
+            const seq = moves.slice(n - length - 1, n - 1).join(",");
+            const next = moves[n - 1]; // Current move
+            array.push({ seq, next });
+            // No strict limit needed for 100 games, but good practice
+            if (array.length > 500) array.shift(); 
+        }
+    };
+
+    recordPattern(5, aiState.patterns5);
+    recordPattern(4, aiState.patterns4);
+    recordPattern(3, aiState.patterns3);
+    recordPattern(2, aiState.patterns2);
+
+    // Update state for next turn
+    aiState.lastHumanMove = humanMove;
+    aiState.lastResult = result;
+}
+
+function endGame() {
+    addGameToHistory();
+    renderHistoryTable();
+    choiceBtns.forEach(btn => btn.disabled = true);
+    
+    if (orbitCount) orbitCount.textContent = "0";
+    document.getElementById("gameStatus").textContent = "Game Over!";
+}
+
 function updateDecisionBox(robotMove, reason, gameResult = null) {
   const decisionContent = document.querySelector(".decision-content");
   if (decisionContent) {
