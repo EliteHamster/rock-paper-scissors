@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Jolly+Lodger&family=Sixtyfour+Convergence&family=Nosifer&family=Bungee&family=Press+Start+2P&family=Orbitron:wght@900&family=Black+Ops+One&family=Audiowide&family=Righteous&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Jolly+Lodger&family=Sixtyfour+Convergence&family=Nosifer&family=Bungee&family=Press+Start+2P&family=Orbitron:wght@900&family=Black+Ops+One&family=Audiowide&family=Righteous&display=swap");
 
 body {
   font-family: Arial, sans-serif;
@@ -53,7 +53,8 @@ body {
   z-index: 1;
 }
 
-.player-section, .ai-section {
+.player-section,
+.ai-section {
   flex: 0 0 auto;
   text-align: center;
   min-width: 340px; /* Increased to accommodate wider robot button */
@@ -78,7 +79,9 @@ body {
   align-items: flex-start;
   text-align: left;
   padding-left: 20px; /* Small padding from centerline */
-  transform: translateX(-45px); /* Move closer to centerline to match human distance */
+  transform: translateX(
+    -45px
+  ); /* Move closer to centerline to match human distance */
 }
 
 .ai-section h3 {
@@ -150,7 +153,8 @@ body {
   margin-top: 10px;
   font-size: 1em;
 }
-.history-table th, .history-table td {
+.history-table th,
+.history-table td {
   border: 1px solid #ddd;
   padding: 6px 10px;
   text-align: center;
@@ -174,7 +178,7 @@ body {
   justify-content: center;
   gap: 18px;
   font-size: 2.2em;
-  font-family: 'Segoe UI', 'Arial', sans-serif;
+  font-family: "Segoe UI", "Arial", sans-serif;
   margin-bottom: 18px;
   position: relative;
   user-select: none;
@@ -210,19 +214,38 @@ body {
   animation: squashScissors 1s forwards;
 }
 @keyframes squashScissors {
-  0% { transform: scaleY(1) scaleX(1); }
-  30% { transform: scaleY(0.5) scaleX(1.2); color: #c00;}
-  60% { transform: scaleY(0.4) scaleX(1.3); color: #c00;}
-  100% { transform: scaleY(1) scaleX(1); color: inherit;}
+  0% {
+    transform: scaleY(1) scaleX(1);
+  }
+  30% {
+    transform: scaleY(0.5) scaleX(1.2);
+    color: #c00;
+  }
+  60% {
+    transform: scaleY(0.4) scaleX(1.3);
+    color: #c00;
+  }
+  100% {
+    transform: scaleY(1) scaleX(1);
+    color: inherit;
+  }
 }
 .rock-attack {
   animation: rockAttack 1s;
 }
 @keyframes rockAttack {
-  0% { transform: translateX(0);}
-  30% { transform: translateX(30px) scale(1.2);}
-  60% { transform: translateX(30px) scale(1.2);}
-  100% { transform: translateX(0);}
+  0% {
+    transform: translateX(0);
+  }
+  30% {
+    transform: translateX(30px) scale(1.2);
+  }
+  60% {
+    transform: translateX(30px) scale(1.2);
+  }
+  100% {
+    transform: translateX(0);
+  }
 }
 
 /* Paper wipes out Rock */
@@ -232,11 +255,26 @@ body {
   position: relative;
 }
 @keyframes paperWipe {
-  0% { left: 0; opacity: 1;}
-  30% { left: -40px; opacity: 1;}
-  60% { left: -40px; opacity: 1;}
-  80% { left: 0; opacity: 1;}
-  100% { left: 0; opacity: 1;}
+  0% {
+    left: 0;
+    opacity: 1;
+  }
+  30% {
+    left: -40px;
+    opacity: 1;
+  }
+  60% {
+    left: -40px;
+    opacity: 1;
+  }
+  80% {
+    left: 0;
+    opacity: 1;
+  }
+  100% {
+    left: 0;
+    opacity: 1;
+  }
 }
 .rock-hidden {
   opacity: 0.1;
@@ -247,7 +285,8 @@ body {
 .paper-cut {
   position: relative;
 }
-.paper-cut-top, .paper-cut-bottom {
+.paper-cut-top,
+.paper-cut-bottom {
   display: block;
   position: absolute;
   left: 0;
@@ -276,23 +315,43 @@ body {
   animation: cutBottom 1s forwards;
 }
 @keyframes cutTop {
-  0% { transform: translateY(0);}
-  60% { transform: translateY(-18px);}
-  100% { transform: translateY(0);}
+  0% {
+    transform: translateY(0);
+  }
+  60% {
+    transform: translateY(-18px);
+  }
+  100% {
+    transform: translateY(0);
+  }
 }
 @keyframes cutBottom {
-  0% { transform: translateY(0);}
-  60% { transform: translateY(18px);}
-  100% { transform: translateY(0);}
+  0% {
+    transform: translateY(0);
+  }
+  60% {
+    transform: translateY(18px);
+  }
+  100% {
+    transform: translateY(0);
+  }
 }
 .scissors-attack {
   animation: scissorsAttack 1s;
 }
 @keyframes scissorsAttack {
-  0% { transform: translateX(0);}
-  30% { transform: translateX(-30px) scale(1.2);}
-  60% { transform: translateX(-30px) scale(1.2);}
-  100% { transform: translateX(0);}
+  0% {
+    transform: translateX(0);
+  }
+  30% {
+    transform: translateX(-30px) scale(1.2);
+  }
+  60% {
+    transform: translateX(-30px) scale(1.2);
+  }
+  100% {
+    transform: translateX(0);
+  }
 }
 
 .rps-anim-container {
@@ -316,24 +375,47 @@ body {
 
 /* Rock bounce and smush */
 .rock-bounce {
-  animation: rockBounce 1.2s cubic-bezier(.68,-0.55,.27,1.55);
+  animation: rockBounce 1.2s cubic-bezier(0.68, -0.55, 0.27, 1.55);
 }
 @keyframes rockBounce {
-  0% { transform: translateX(0) scale(1);}
-  20% { transform: translateY(-20px) scale(1.1);}
-  40% { transform: translateX(60px) scale(1);}
-  60% { transform: translateY(-10px) scale(1.2);}
-  80% { transform: translateX(120px) scale(1);}
-  100% { transform: translateX(120px) scale(1);}
+  0% {
+    transform: translateX(0) scale(1);
+  }
+  20% {
+    transform: translateY(-20px) scale(1.1);
+  }
+  40% {
+    transform: translateX(60px) scale(1);
+  }
+  60% {
+    transform: translateY(-10px) scale(1.2);
+  }
+  80% {
+    transform: translateX(120px) scale(1);
+  }
+  100% {
+    transform: translateX(120px) scale(1);
+  }
 }
 .scissors-smush {
   animation: scissorsSmush 1.2s;
 }
 @keyframes scissorsSmush {
-  0% { transform: scaleY(1); }
-  40% { transform: scaleY(0.7) scaleX(1.2); color: #c00; }
-  80% { transform: scaleY(0.5) scaleX(1.3); color: #c00; }
-  100% { transform: scaleY(1) scaleX(1); color: inherit; }
+  0% {
+    transform: scaleY(1);
+  }
+  40% {
+    transform: scaleY(0.7) scaleX(1.2);
+    color: #c00;
+  }
+  80% {
+    transform: scaleY(0.5) scaleX(1.3);
+    color: #c00;
+  }
+  100% {
+    transform: scaleY(1) scaleX(1);
+    color: inherit;
+  }
 }
 
 /* Paper crawl and cover */
@@ -341,12 +423,24 @@ body {
   animation: paperCrawl 1.5s;
 }
 @keyframes paperCrawl {
-  0% { transform: translateX(0) rotate(0);}
-  20% { transform: translateY(10px) rotate(-10deg);}
-  40% { transform: translateX(-60px) rotate(8deg);}
-  60% { transform: translateY(20px) rotate(-8deg);}
-  80% { transform: translateX(-120px) rotate(0);}
-  100% { transform: translateX(-120px) rotate(0);}
+  0% {
+    transform: translateX(0) rotate(0);
+  }
+  20% {
+    transform: translateY(10px) rotate(-10deg);
+  }
+  40% {
+    transform: translateX(-60px) rotate(8deg);
+  }
+  60% {
+    transform: translateY(20px) rotate(-8deg);
+  }
+  80% {
+    transform: translateX(-120px) rotate(0);
+  }
+  100% {
+    transform: translateX(-120px) rotate(0);
+  }
 }
 .rock-covered {
   animation: rockCovered 1.5s;
@@ -354,10 +448,18 @@ body {
   color: #ff4fa3;
 }
 @keyframes rockCovered {
-  0% { filter: none;}
-  40% { filter: brightness(0.7);}
-  80% { filter: brightness(0.4);}
-  100% { filter: none;}
+  0% {
+    filter: none;
+  }
+  40% {
+    filter: brightness(0.7);
+  }
+  80% {
+    filter: brightness(0.4);
+  }
+  100% {
+    filter: none;
+  }
 }
 
 /* Scissors cut and paper peel */
@@ -365,18 +467,32 @@ body {
   animation: scissorsCut 1.2s;
 }
 @keyframes scissorsCut {
-  0% { transform: translateX(0);}
-  40% { transform: translateX(-60px) rotate(-15deg);}
-  80% { transform: translateX(-120px) rotate(10deg);}
-  100% { transform: translateX(-120px) rotate(0);}
+  0% {
+    transform: translateX(0);
+  }
+  40% {
+    transform: translateX(-60px) rotate(-15deg);
+  }
+  80% {
+    transform: translateX(-120px) rotate(10deg);
+  }
+  100% {
+    transform: translateX(-120px) rotate(0);
+  }
 }
 .paper-peel {
   animation: paperPeel 1.2s;
 }
 @keyframes paperPeel {
-  0% { clip-path: inset(0 0 0 0);}
-  60% { clip-path: inset(0 0 40% 0);}
-  100% { clip-path: inset(0 0 0 0);}
+  0% {
+    clip-path: inset(0 0 0 0);
+  }
+  60% {
+    clip-path: inset(0 0 40% 0);
+  }
+  100% {
+    clip-path: inset(0 0 0 0);
+  }
 }
 
 .rps-orbit-title {
@@ -394,7 +510,7 @@ body {
 }
 
 .orbit-logo {
-  height: 300px;   /* was 80px */
+  height: 300px; /* was 80px */
   width: auto;
   display: block;
   background: none !important;
@@ -402,8 +518,8 @@ body {
 
 .rps-orbit-circle {
   position: relative;
-  width: 170px;   /* was 160px */
-  height: 170px;  /* was 160px */
+  width: 170px; /* was 160px */
+  height: 170px; /* was 160px */
   border-radius: 50%;
   background: radial-gradient(circle, #fff 60%, #ffe0f4 100%);
   box-shadow: 0 0 16px #ff4fa355;
@@ -412,7 +528,8 @@ body {
 
 .rps-orbit-center {
   position: absolute;
-  top: 50%; left: 50%;
+  top: 50%;
+  left: 50%;
   transform: translate(-50%, -50%);
   text-align: center;
   z-index: 2;
@@ -450,8 +567,14 @@ body {
 }
 
 @keyframes orbit-planet {
-  0%   { transform: translate(-50%, -50%) rotate(var(--orbit-angle)) translateX(78px) rotate(calc(-1 * var(--orbit-angle))); }
-  100% { transform: translate(-50%, -50%) rotate(calc(360deg + var(--orbit-angle))) translateX(85px) rotate(calc(-360deg - var(--orbit-angle))); }
+  0% {
+    transform: translate(-50%, -50%) rotate(var(--orbit-angle)) translateX(78px)
+      rotate(calc(-1 * var(--orbit-angle)));
+  }
+  100% {
+    transform: translate(-50%, -50%) rotate(calc(360deg + var(--orbit-angle)))
+      translateX(85px) rotate(calc(-360deg - var(--orbit-angle)));
+  }
 }
 
 .algo-selector {
@@ -501,7 +624,8 @@ body {
 }
 
 /* Prevent text selection entirely on algo buttons */
-.algo-btn, .algo-btn * {
+.algo-btn,
+.algo-btn * {
   user-select: none !important;
   -webkit-user-select: none !important;
   -moz-user-select: none !important;
@@ -561,8 +685,13 @@ body {
 }
 
 @keyframes winCirclePulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.3); }
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.3);
+  }
 }
 .win-circle.green {
   background: #43ea7f;
@@ -575,7 +704,8 @@ body {
   border-color: #c00;
 }
 
-#playerWinCircle, #robotWinCircle {
+#playerWinCircle,
+#robotWinCircle {
   display: inline-block !important;
   visibility: visible !important;
   position: static !important;
@@ -632,11 +762,13 @@ body {
   min-width: 240px; /* adequate space to prevent overlap */
   margin-top: 40px; /* Move pie chart down to align with button center */
   align-self: flex-end; /* Align to right side of player section */
-  transform: translateX(-36px); /* Move left to give proper spacing from buttons */
+  transform: translateX(
+    -36px
+  ); /* Move left to give proper spacing from buttons */
 }
 
 .pie-chart {
-  width: 192px;   /* reduced by 20% from 240px */
+  width: 192px; /* reduced by 20% from 240px */
   height: 192px;
   margin-bottom: 12px;
 }
@@ -689,7 +821,8 @@ body {
   width: 100%;
   border-collapse: collapse;
 }
-.ai-logic-table th, .ai-logic-table td {
+.ai-logic-table th,
+.ai-logic-table td {
   border: 1px solid #43ea7f;
   padding: 6px 10px;
   text-align: left;
@@ -735,7 +868,7 @@ body {
 }
 
 .tooltip-hover::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 50%;
   left: 110%;
@@ -790,7 +923,7 @@ body {
 }
 
 .tooltip-hover-green::after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: 110%;
   left: 50%;
@@ -839,8 +972,13 @@ body {
 }
 
 @keyframes robotPulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.05); }
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
 }
 
 /* Purple robot stats */
@@ -952,7 +1090,8 @@ body {
 }
 
 .dynamic-result {
-  font-family: 'Jolly Lodger', 'Sixtyfour Convergence', 'Nosifer', 'Bungee', 'Arial Black', sans-serif;
+  font-family: "Jolly Lodger", "Sixtyfour Convergence", "Nosifer", "Bungee",
+    "Arial Black", sans-serif;
   font-size: 3em;
   font-weight: normal;
   text-transform: uppercase;
@@ -960,7 +1099,8 @@ body {
   opacity: 0;
   transform: scale(0);
   transition: all 0.4s ease;
-  text-shadow: 3px 3px 0px #000, -3px -3px 0px #000, 3px -3px 0px #000, -3px 3px 0px #000;
+  text-shadow: 3px 3px 0px #000, -3px -3px 0px #000, 3px -3px 0px #000,
+    -3px 3px 0px #000;
   position: relative;
   z-index: 10;
 }
@@ -1008,15 +1148,29 @@ body {
 
 /* Animations */
 @keyframes resultPulse {
-  0%, 100% { transform: scale(1); }
-  25% { transform: scale(1.1); }
-  50% { transform: scale(1.05); }
-  75% { transform: scale(1.1); }
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  25% {
+    transform: scale(1.1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  75% {
+    transform: scale(1.1);
+  }
 }
 
 @keyframes counterPulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.2); }
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
 }
 
 @keyframes flyToTarget {
@@ -1049,55 +1203,87 @@ body {
 /* --- Setup Area Styling --- */
 .game-setup {
   background: rgba(255, 255, 255, 0.05);
-  padding: 24px;
-  border-radius: 16px;
-  margin-bottom: 32px;
+  padding: 30px;
+  border-radius: 20px;
+  margin: 0 auto 32px auto; /* Center the container */
   backdrop-filter: blur(5px);
   border: 1px solid rgba(255, 255, 255, 0.1);
   max-width: 400px;
+  text-align: center; /* Center text context */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .input-group {
-  margin-bottom: 20px;
+  margin-bottom: 24px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
+  align-items: center; /* Center inputs */
+}
+
+.strategy-select {
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Center dropdown label */
 }
 
 #playerName {
-  padding: 12px;
-  border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  background: rgba(0, 0, 0, 0.3);
-  color: white;
-  font-family: 'Inter', sans-serif;
+  width: 100%;
+  max-width: 300px;
+  padding: 12px 20px;
+  border-radius: 25px; /* Rounded pill shape */
+  border: 2px solid #4cc9f0; /* Light Blue Outline */
+  background: #ffffff; /* White Inside */
+  color: #333333; /* Dark Text for readability on white */
+  font-family: "Inter", sans-serif;
+  font-size: 1rem;
+  text-align: center;
+  outline: none;
+  transition: box-shadow 0.3s ease;
+}
+
+#playerName:focus {
+  box-shadow: 0 0 15px rgba(76, 201, 240, 0.5);
+}
+
+#startBtn {
+  margin-top: 10px;
+  width: 100%;
+  max-width: 300px;
+  border-radius: 25px;
 }
 
 .setup-dropdown {
   width: 100%;
-  padding: 12px 16px;
-  border-radius: 12px;
-  border: 1px solid #4cc9f0;
-  background-color: #0f1c30; /* Dark Blue */
-  color: #e6f1ff;
-  font-family: 'Inter', sans-serif;
+  max-width: 300px;
+  padding: 12px 20px;
+  border-radius: 25px; /* Rounded pill shape */
+  border: 2px solid #4cc9f0; /* Light Blue Outline */
+  background-color: #ffffff; /* White Inside */
+  color: #333333; /* Dark Text */
+  font-family: "Inter", sans-serif;
   font-size: 1rem;
+  text-align: center;
+  text-align-last: center; /* Center text within select */
   cursor: pointer;
   transition: all 0.2s ease;
-  appearance: none; /* Remove default arrow */
-  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234cc9f0' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  appearance: none;
+  /* Dark arrow for white background */
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23333' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
   background-repeat: no-repeat;
   background-position: right 1rem center;
   background-size: 1em;
 }
 
 .setup-dropdown:hover {
-  background-color: #1a2f4d;
+  background-color: #f0f8ff; /* Very light blue on hover */
   box-shadow: 0 0 10px rgba(76, 201, 240, 0.3);
 }
 
 .setup-dropdown:focus {
   outline: none;
-  border-color: #43ea7f; /* Green focus */
-  box-shadow: 0 0 0 3px rgba(67, 234, 127, 0.2);
+  border-color: #4cc9f0;
+  box-shadow: 0 0 0 4px rgba(76, 201, 240, 0.2);
 }
